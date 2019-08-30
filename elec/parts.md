@@ -5,11 +5,14 @@
 
 ## Integrated parts
 - 1x I2C 3.3V to 5V BiDirectional logic level converter
-- 1x KY-019 Arduino 5V Relay module
+- 1x KY-019 Arduino 5V Relay module (based on the SRD-05VDC-SL-C)
 
 ## LV parts
-- 2x Pull down resistors (10kOhm)
-- 1x Mecanical switch
+- 1x 10 kOhm Resistor (Pull Down)
+- 1x 3k3 Ohm Resistor (5V to 3V3)
+- 1x 1k6 Ohm Resistor (5V to 3V3)
+- 1x 100 Ohm Resistor (5V to 3V3)
+- 1x Mecanical switch (MMI)
 
 ## HV Parts
 - 1x Light bulb base
