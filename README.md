@@ -17,4 +17,4 @@ Many thanks to the project contributors !
 
 Thanks to :
 - Simon Pavy
-- Clovis Durand (@Clovel)
+- [Clovis Durand](https://github.com/Clovel)
