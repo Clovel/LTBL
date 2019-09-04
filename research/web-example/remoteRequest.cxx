@@ -370,10 +370,10 @@ int acceptRequest(const int pClient, int * const pResult) {
     char *lQueryStr = nullptr;
     int lNumChars   = 0;
 
-    char lBuf[1024U], lMethodStr[256U], lURL[256U], lPath[512U];
+    char lBuf[1024U], lMethodStr[256U], lURLStr[256U], lPath[512U];
     memset(lBuf,       0, 1024U);
     memset(lMethodStr, 0, 256U);
-    memset(lURL,       0, 256U);
+    memset(lURLStr,       0, 256U);
     memset(lPath,      0, 512U);
 
     lNumChars = getLine(pClient, lBuf, sizeof(lBuf));
@@ -387,16 +387,42 @@ int acceptRequest(const int pClient, int * const pResult) {
     }
     lMethodStr[i] = '\0'; /* NULL terminate the method */
 
-    /* Get the URL of the request form the client's request */
+    /* Get the URL of the request from the client's request */
     i = 0;
     while(IS_SPACE(lBuf[j]) && (sizeof(lBuf) > j)) {
         ++j;
     }
-    while (!IS_SPACE(lBuf[j]) && (sizeof(lURL) - 1 > i) && (sizeof(lBuf) > j)) {
-        lURL[i++] = lBuf[j++];
+    while (!IS_SPACE(lBuf[j]) && (sizeof(lURLStr) - 1 > i) && (sizeof(lBuf) > j)) {
+        lURLStr[i++] = lBuf[j++];
     }
-    lURL[i] = '\0'; /* NULL terminate the URL */
-    std::cout << "[DEBUG] <acceptRequest> The URL is " << std::string(lURL) << std::endl;
+    lURLStr[i] = '\0'; /* NULL terminate the URL */
+    std::string lURL(lURLStr);
+    std::cout << "[DEBUG] <acceptRequest> The URL is " << lURL << std::endl;
+
+    /* Get the query from the client's request */
+    lQueryStr = lURLStr;
+    while(('?' != *lQueryStr) && ('\0' != *lQueryStr)) {
+        ++lQueryStr;
+    }
+
+    /* The real query is located after the "?" symbol */
+    if('?' == *lQueryStr) {
+        *lQueryStr = '\0';
+        ++lQueryStr;
+    }
+    std::string lQuery = std::string(lQueryStr);
+    std::cout << "[DEBUG] <acceptRequest> The query is " << lQuery << " (empty = " << (lQuery.empty() ? "true" : "false") << ")" << std::endl;
+
+    /* What is the URL ? */
+    if("/" == lURL) {
+        /* Home page */
+    } else {
+        /* Unimplemented */
+        notFound(pClient);
+        std::cout << "[ERROR] Unknown URL !" << std::endl;
+        close(pClient);
+        return -1;
+    }
 
     /* What method is it ? */
     restMethod_t lMethod = REST_UNKNOWN;
@@ -425,7 +451,7 @@ int acceptRequest(const int pClient, int * const pResult) {
         case REST_GET:
             std::cout << "[DEBUG] <acceptRequest> Request is GET" << std::endl;
             /* What is the client trying to GET ? */
-            lQueryStr = lURL;
+            lQueryStr = lURLStr;
             std::cout << "[DEBUG] <acceptRequest> The GET query is " << std::string(lQueryStr) << std::endl;
             while(('?' != *lQueryStr) && ('\0' != *lQueryStr)) {
                 ++lQueryStr;
