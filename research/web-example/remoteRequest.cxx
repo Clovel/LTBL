@@ -80,84 +80,21 @@ int getLine(int pSock, char *pBuf, int pSize)
 }
 
 /**********************************************************************/
-/* Inform the client that the requested web method has not been
- * implemented.
- * Parameter: the client socket */
-/**********************************************************************/
-void unimplemented(int pClient)
-{
-    char lBuf[1024];
-
-    sprintf(lBuf, "HTTP/1.0 501 Method Not Implemented\r\n");
-    send(pClient, lBuf, strlen(lBuf), 0);
-    sprintf(lBuf, "Content-Type: text/html\r\n");
-    send(pClient, lBuf, strlen(lBuf), 0);
-    sprintf(lBuf, "\r\n");
-    send(pClient, lBuf, strlen(lBuf), 0);
-    sprintf(lBuf, "<HTML><HEAD><TITLE>Method Not Implemented\r\n");
-    send(pClient, lBuf, strlen(lBuf), 0);
-    sprintf(lBuf, "</TITLE></HEAD>\r\n");
-    send(pClient, lBuf, strlen(lBuf), 0);
-    sprintf(lBuf, "<BODY><P>HTTP request method not supported.\r\n");
-    send(pClient, lBuf, strlen(lBuf), 0);
-    sprintf(lBuf, "</BODY></HTML>\r\n");
-    send(pClient, lBuf, strlen(lBuf), 0);
-}
-
-/**********************************************************************/
-/* Inform the client that a request it has made has a problem.
- * Parameters: client socket */
-/**********************************************************************/
-void bad_request(int client)
-{
-    char buf[1024];
-
-    sprintf(buf, "HTTP/1.0 400 BAD REQUEST\r\n");
-    send(client, buf, sizeof(buf), 0);
-    sprintf(buf, "Content-type: text/html\r\n");
-    send(client, buf, sizeof(buf), 0);
-    sprintf(buf, "\r\n");
-    send(client, buf, sizeof(buf), 0);
-    sprintf(buf, "<P>Your browser sent a bad request, ");
-    send(client, buf, sizeof(buf), 0);
-    sprintf(buf, "such as a POST without a Content-Length.\r\n");
-    send(client, buf, sizeof(buf), 0);
-}
-
-/**********************************************************************/
 /* Put the entire contents of a file out on a socket.  This function
  * is named after the UNIX "cat" command, because it might have been
  * easier just to do something like pipe, fork, and exec("cat").
  * Parameters: the client socket descriptor
  *             FILE pointer for the file to cat */
 /**********************************************************************/
-void cat(int client, FILE *resource)
+void cat(const int pClient, FILE * const pResource)
 {
-    char buf[1024];
+    char lBuf[1024U];
 
-    fgets(buf, sizeof(buf), resource);
-    while (!feof(resource)) {
-        send(client, buf, strlen(buf), 0);
-        fgets(buf, sizeof(buf), resource);
+    fgets(lBuf, sizeof(lBuf), pResource);
+    while (!feof(pResource)) {
+        send(pClient, lBuf, strlen(lBuf), 0);
+        fgets(lBuf, sizeof(lBuf), pResource);
     }
-}
-
-/**********************************************************************/
-/* Inform the client that a CGI script could not be executed.
- * Parameter: the client socket descriptor. */
-/**********************************************************************/
-void cannot_execute(int client)
-{
-    char buf[1024];
-
-    sprintf(buf, "HTTP/1.0 500 Internal Server Error\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "Content-type: text/html\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "<P>Error prohibited CGI execution.\r\n");
-    send(client, buf, strlen(buf), 0);
 }
 
 /**********************************************************************/
@@ -165,11 +102,165 @@ void cannot_execute(int client)
  * on value of errno, which indicates system call errors) and exit the
  * program indicating an error. */
 /**********************************************************************/
-void error_die(const char *sc)
+void error_die(const char * const sc)
 {
     perror(sc);
     exit(EXIT_FAILURE);
 }
+
+/**********************************************************************/
+/* Inform the client that the requested web method has not been
+ * implemented.
+ * Parameter: the client socket */
+/**********************************************************************/
+void unimplemented(const int pClient)
+{
+    std::string lUnimplemented = "HTTP/1.0 501 Method Not Implemented\r\n"
+    "Content-Type: text/html\r\n"
+    "\r\n"
+    "<html lang=\"en\">\r\n"
+    "    <head>\r\n"
+    "        <title>Method Not Implemented</title>\r\n"
+    "    </head>\r\n"
+    "    <body>\r\n"
+    "        HTTP request method not supported.\r\n"
+    "    </body>\r\n"
+    "</html>\r\n";
+    
+    htmlSend(pClient, lUnimplemented);
+}
+
+/**********************************************************************/
+/* Inform the client that a request it has made has a problem.
+ * Parameters: client socket */
+/**********************************************************************/
+void bad_request(const int pClient)
+{
+    std::string lBadReq = "HTTP/1.0 400 BAD REQUEST\r\n"
+    "Content-Type: text/html\r\n"
+    "\r\n"
+    "<html lang =\"en\">"
+    "    <head>\r\n"
+    "        <title>web-example - 500 Server error</title>\r\n"
+    "    </head>\r\n"
+    "    <body>\r\n"
+    "        Your browser sent a bad request, "
+    "        such as a POST without a Content-Length.\r\n"
+    "    </body>\r\n"
+    "</html>\r\n";
+
+    (void)htmlSend(pClient, lBadReq);
+}
+
+/**********************************************************************/
+/* Inform the client that a CGI script could not be executed.
+ * Parameter: the client socket descriptor. */
+/**********************************************************************/
+void cannot_execute(const int pClient)
+{
+    std::string lExeError = "HTTP/1.0 500 Internal Server Error\r\n"
+    "Content-Type: text/html\r\n"
+    "\r\n"
+    "<html lang =\"en\">"
+    "    <head>\r\n"
+    "        <title>web-example - 500 Server error</title>\r\n"
+    "    </head>\r\n"
+    "    <body>\r\n"
+    "        Server-side error prohibited execution."
+    "    </body>\r\n"
+    "</html>\r\n";
+
+    (void)htmlSend(pClient, lExeError);
+}
+
+/**********************************************************************/
+/* Return the informational HTTP headers about a file. */
+/* Parameters: the socket to print the headers on
+ *             the name of the file */
+/**********************************************************************/
+void headers(const int pClient, const char * const pFileName)
+{
+    std::string lHeader = "HTTP/1.0 200 Ok\r\n"
+    "Content-Type: text/html\r\n"
+    "\r\n";
+
+    (void)htmlSend(pClient, lHeader);
+}
+
+/**********************************************************************/
+/* Give a client a 404 not found status message. */
+/**********************************************************************/
+void not_found(const int pClient)
+{
+    std::string l404 = "HTTP/1.0 404 NOT FOUND\r\n"
+    "Content-Type: text/html\r\n"
+    "\r\n"
+    "<html lang =\"en\">"
+    "    <head>\r\n"
+    "        <title>web-example - 404 Not Found</title>\r\n"
+    "    </head>\r\n"
+    "    <body>\r\n"
+    "        The server could not fulfill"
+    "        your request because the resource specified\r\n"
+    "        is unavailable or nonexistent.\r\n"
+    "        <br>\r\n"
+    "        Please check that you entered the correct URL.\r\n"
+    "    </body>\r\n"
+    "</html>\r\n";
+
+    (void)htmlSend(pClient, l404);
+}
+
+/**********************************************************************/
+/* Give a client a "found" status message. */
+/**********************************************************************/
+void home(const int pClient)
+{
+    std::string lHome = "HTTP/1.0 200 Ok\r\n"
+    "Content-Type: text/html\r\n"
+    "\r\n"
+    "<html lang =\"en\">"
+    "    <head>\r\n"
+    "        <title>web-example</title>\r\n"
+    "    </head>\r\n"
+    "    <body>\r\n"
+    "        Hello there !<br>"
+    "        General Kenobi !\r\n"
+    "    </body>\r\n"
+    "</html>\r\n";
+
+    (void)htmlSend(pClient, lHome);
+}
+
+/**********************************************************************/
+/* Send a regular file to the client.  Use headers, and report
+ * errors to client if they occur.
+ * Parameters: a pointer to a file structure produced from the socket
+ *              file descriptor
+ *             the name of the file to serve */
+/**********************************************************************/
+void serve_file(const int pClient, const char * const pFileName)
+{
+    FILE    *lResource   = NULL;
+    int     lNumChars    = 1;
+    char    lBuf[1024U];
+
+    lBuf[0U]  = 'A';
+    lBuf[1U]  = '\0';
+    while ((lNumChars > 0) && strcmp("\n", lBuf)) { /* read & discard headers */
+        lNumChars = getLine(pClient, lBuf, sizeof(lBuf));
+    }
+
+    lResource = fopen(pFileName, "r");
+    if (lResource == NULL) {
+        not_found(pClient);
+    } else {
+        headers(pClient, pFileName);
+        cat(pClient, lResource);
+    }
+    fclose(lResource);
+}
+
 
 /**********************************************************************/
 /* Execute a CGI script.  Will need to set environment variables as
@@ -264,100 +355,6 @@ void execute_cgi(int client, const char *path,
         close(cgi_input[1]);
         waitpid(pid, &status, 0);
     }
-}
-
-/**********************************************************************/
-/* Return the informational HTTP headers about a file. */
-/* Parameters: the socket to print the headers on
- *             the name of the file */
-/**********************************************************************/
-void headers(int client, const char *filename)
-{
-    char buf[1024];
-
-    (void)filename; /* could use filename to determine file type */
-
-    strcpy(buf, "HTTP/1.0 200 OK\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "Content-Type: text/html\r\n");
-    send(client, buf, strlen(buf), 0);
-    strcpy(buf, "\r\n");
-    send(client, buf, strlen(buf), 0);
-}
-
-/**********************************************************************/
-/* Give a client a 404 not found status message. */
-/**********************************************************************/
-void not_found(int client)
-{
-    char buf[1024];
-
-    sprintf(buf, "HTTP/1.0 404 NOT FOUND\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "Content-Type: text/html\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "<HTML><TITLE>Not Found</TITLE>\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "<BODY><P>The server could not fulfill\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "your request because the resource specified\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "is unavailable or nonexistent.\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "</BODY></HTML>\r\n");
-    send(client, buf, strlen(buf), 0);
-}
-
-/**********************************************************************/
-/* Give a client a "found" status message. */
-/**********************************************************************/
-void home(int client)
-{
-    char buf[1024];
-
-    sprintf(buf, "HTTP/1.0 200 Ok\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "Content-Type: text/html\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "<HTML><TITLE>Hello there !</TITLE>\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "<BODY><P>General Kenobi !\r\n");
-    send(client, buf, strlen(buf), 0);
-    sprintf(buf, "</BODY></HTML>\r\n");
-    send(client, buf, strlen(buf), 0);
-}
-
-/**********************************************************************/
-/* Send a regular file to the client.  Use headers, and report
- * errors to client if they occur.
- * Parameters: a pointer to a file structure produced from the socket
- *              file descriptor
- *             the name of the file to serve */
-/**********************************************************************/
-void serve_file(int client, const char *filename)
-{
-    FILE    *resource   = NULL;
-    int     numchars    = 1;
-    char    buf[1024];
-
-    buf[0]  = 'A';
-    buf[1]  = '\0';
-    while ((numchars > 0) && strcmp("\n", buf)) { /* read & discard headers */
-        numchars = getLine(client, buf, sizeof(buf));
-    }
-
-    resource = fopen(filename, "r");
-    if (resource == NULL) {
-        not_found(client);
-    } else {
-        headers(client, filename);
-        cat(client, resource);
-    }
-    fclose(resource);
 }
 
 /**********************************************************************/
