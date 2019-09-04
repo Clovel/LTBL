@@ -190,7 +190,7 @@ void headers(const int pClient, const char * const pFileName)
 /**********************************************************************/
 /* Give a client a 404 not found status message. */
 /**********************************************************************/
-void not_found(const int pClient)
+void notFound(const int pClient)
 {
     std::string l404 = "HTTP/1.0 404 NOT FOUND\r\n"
     "Content-Type: text/html\r\n"
@@ -253,7 +253,7 @@ void serve_file(const int pClient, const char * const pFileName)
 
     lResource = fopen(pFileName, "r");
     if (lResource == NULL) {
-        not_found(pClient);
+        notFound(pClient);
     } else {
         headers(pClient, pFileName);
         cat(pClient, lResource);
