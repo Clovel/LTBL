@@ -41,5 +41,16 @@ src_file_list*.txt
 # pkg-config generated files --------------------
 *.pc
 
+# Binary files ----------------------------------
+a.out
+*.exe
+*.dll
+*.dylib
+*.a
+*.so
+
+web-example
+!web-example/
+
 # macOS files -----------------------------------
 .DS_Store
