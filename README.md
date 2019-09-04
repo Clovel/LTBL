@@ -10,3 +10,11 @@ https://forum.arduino.cc/index.php?topic=590593.0
 https://developer.myconstellation.io/tutorials/creer-une-prise-connectee-avec-un-esp8266/
 
 ___
+
+# Contributors
+
+Many thanks to the project contributors ! 
+
+Thanks to :
+- Simon Pavy
+- Clovis Durand (@Clovel)
