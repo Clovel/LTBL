@@ -36,7 +36,7 @@ std::string sWebStr = "HTTP/1.0 200 Ok\r\n"
 "        <title>web-example</title>\r\n"
 "    </head>\r\n"
 "    <body>\r\n"
-"        HHello there !\r\nGeneral Kenobi !\r\n"
+"        Hello there !\r\nGeneral Kenobi !\r\n"
 "    </body>\r\n"
 "</html>\r\n";
 
