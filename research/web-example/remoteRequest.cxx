@@ -200,8 +200,7 @@ void notFound(const int pClient)
     "        <title>web-example - 404 Not Found</title>\r\n"
     "    </head>\r\n"
     "    <body>\r\n"
-    "        The server could not fulfill"
-    "        your request because the resource specified\r\n"
+    "        The server could not fulfill your request because the resource specified\r\n"
     "        is unavailable or nonexistent.\r\n"
     "        <br>\r\n"
     "        Please check that you entered the correct URL.\r\n"
@@ -224,7 +223,7 @@ void home(const int pClient)
     "        <title>web-example</title>\r\n"
     "    </head>\r\n"
     "    <body>\r\n"
-    "        Hello there !<br>"
+    "        Hello there !<br>\r\n"
     "        General Kenobi !\r\n"
     "    </body>\r\n"
     "</html>\r\n";
