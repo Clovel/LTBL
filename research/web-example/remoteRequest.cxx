@@ -401,12 +401,21 @@ int acceptRequest(const int pClient, int * const pResult) {
 
     /* What method is it ? */
     restMethod_t lMethod = REST_UNKNOWN;
-    if(0 == strcasecmp("POST", lMethodStr)) {
-        lMethod = REST_POST;
-    } else if (0 == strcasecmp("GET", lMethodStr)) {
+    if(0 == strcasecmp("GET", lMethod.c_str())) {
         lMethod = REST_GET;
+    } else if (0 == strcasecmp("POST", lMethod.c_str())) {
+        lMethod = REST_POST;
+    } else if (0 == strcasecmp("PUT", lMethod.c_str())) {
+        lMethod = REST_PUT;
+    } else if (0 == strcasecmp("HEAD", lMethod.c_str())) {
+        lMethod = REST_HEAD;
+    } else if (0 == strcasecmp("DELETE", lMethod.c_str())) {
+        lMethod = REST_DELETE;
+    } else if (0 == strcasecmp("PATCH", lMethod.c_str())) {
+        lMethod = REST_PATCH;
+    } else if (0 == strcasecmp("OPTIONS", lMethod.c_str())) {
+        lMethod = REST_OPTIONS;
     } else {
-        /* We only support POST & GET for now */
         unimplemented(pClient);
         return -1;
     }
