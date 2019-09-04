@@ -455,5 +455,8 @@ int acceptRequest(const int pClient, int * const pResult) {
             return -1;
     }
 
+    /* Close the client */
+    close(pClient);
+
     return 0;
 }
