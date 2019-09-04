@@ -416,6 +416,7 @@ int acceptRequest(const int pClient, int * const pResult) {
         lMethod = REST_OPTIONS;
     } else {
         unimplemented(pClient);
+        close(pClient);
         return -1;
     }
 
@@ -452,11 +453,13 @@ int acceptRequest(const int pClient, int * const pResult) {
         case REST_PUT:
             std::cout << "[DEBUG] <acceptRequest> Request is PUT" << std::endl;
             unimplemented(pClient);
+            close(pClient);
             return -1;
         case REST_UNKNOWN:
         default:
             std::cout << "[ERROR] <acceptRequest> Request is unknown" << std::endl;
             unimplemented(pClient);
+            close(pClient);
             return -1;
     }
 
