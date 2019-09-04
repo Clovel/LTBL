@@ -28,6 +28,14 @@
 /* Variable declarations ------------------------------- */
 
 /* Functions ------------------------------------------- */
+int htmlSend(const int pClient, const char * const pStr) {
+    return send(pClient, pStr, strlen(pStr), 0);
+}
+
+int htmlSend(const int pClient, const std::string pStr) {
+    return send(pClient, pStr.c_str(), pStr.length(), 0);
+}
+
 /**********************************************************************/
 /* Get a line from a socket, whether the line ends in a newline,
  * carriage return, or a CRLF combination.  Terminates the string read
