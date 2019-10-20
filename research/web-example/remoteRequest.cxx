@@ -8,6 +8,8 @@
 /* Includes -------------------------------------------- */
 #include "remoteRequest.hxx"
 
+#include "Relay.hxx"
+
 /* C++ System */
 #include <iostream>
 
@@ -26,6 +28,7 @@
 #define IS_SPACE(x) isspace((int)(x))
 
 /* Variable declarations ------------------------------- */
+extern elec::Relay sRelay;
 
 /* Functions ------------------------------------------- */
 int htmlSend(const int pClient, const char * const pStr) {
@@ -89,8 +92,12 @@ int getLine(int pSock, char *pBuf, int pSize)
 void cat(const int pClient, FILE * const pResource)
 {
     char lBuf[1024U];
+    memset(lBuf, 0, 1024U);
 
+    /* Get the contents of the file */
     fgets(lBuf, sizeof(lBuf), pResource);
+
+    /* Send the contents of the file into the socket */
     while (!feof(pResource)) {
         send(pClient, lBuf, strlen(lBuf), 0);
         fgets(lBuf, sizeof(lBuf), pResource);
@@ -241,10 +248,10 @@ void togglePage(const int pClient, const int pVar = 0) {
     "    <title>web-example - Toggle switch</title>\r\n"
     "    <body>\r\n"
     "        <h2>Toggle Switch</h2>\r\n"
-    "        <h3>Switch is currently at value : " + std::to_string(pVar) + "<h3>\r\n"
+    "        <h3>Switch is currently at value : " + std::string((sRelay.isOn() ? "ON" : "OFF")) + "<h3>\r\n"
     "        <input type=\"button\" value=\"Click me\" onclick=\"post('/switch/', 'switch', '123'});\">\r\n"
     "\r\n"
-    "        <script>\r\n"
+    "        <script>\r\n" /* This is the begining of a JavaScript section */
     "            /**\r\n"
     "             * sends a request to the specified url from a form. this will change the window location.\r\n"
     "             * @param {string} path the path to send the post request to\r\n"
@@ -260,26 +267,27 @@ void togglePage(const int pClient, const int pVar = 0) {
     "                form.method = method;\r\n"
     "                form.action = path + \"?\" + paramName + \"=\" + paramValue;\r\n"
     "\r\n"
-    // "                for (const key in params) {\r\n"
-    // "                    if (params.hasOwnProperty(key)) {\r\n"
-    // "                        const hiddenField = document.createElement('input');\r\n"
-    // "                        hiddenField.type  = 'hidden';\r\n"
-    // "                        hiddenField.name  = key;\r\n"
-    // "                        hiddenField.value = params[key];\r\n"
-    // "\r\n"
-    // "                        form.appendChild(hiddenField);\r\n"
-    // "                    }\r\n"
-    // "                }\r\n"
+    "                for (const key in params) {\r\n"
+    "                    if (params.hasOwnProperty(key)) {\r\n"
+    "                        const hiddenField = document.createElement('input');\r\n"
+    "                        hiddenField.type  = 'hidden';\r\n"
+    "                        hiddenField.name  = key;\r\n"
+    "                        hiddenField.value = params[key];\r\n"
+    "\r\n"
+    "                        form.appendChild(hiddenField);\r\n"
+    "                    }\r\n"
+    "                }\r\n"
     "\r\n"
     "                document.body.appendChild(form);\r\n"
     "                form.submit();\r\n"
     "            }\r\n"
-    "        </script>\r\n"
+    "        </script>\r\n" /* End of JS section */
     "\r\n"
     "    </body>\r\n"
     "</html>\r\n";
 
-    std::cout << "[DEBUG] Toggle page code :" << std::endl << std::endl << lTogglePage << std::endl;
+    //std::cout << "[DEBUG] Toggle page code :" << std::endl << std::endl << lTogglePage << std::endl;
+    std::cout << "[DEBUG] Sending the toggle page code !" << std::endl;
     htmlSend(pClient, lTogglePage);
 }
 /**********************************************************************/
@@ -291,12 +299,13 @@ void togglePage(const int pClient, const int pVar = 0) {
 /**********************************************************************/
 void serve_file(const int pClient, const char * const pFileName)
 {
-    FILE    *lResource   = NULL;
-    int     lNumChars    = 1;
-    char    lBuf[1024U];
+    FILE         *lResource   = NULL;
+    unsigned int  lNumChars   = 1;
+    char          lBuf[1024U];
+    memset(lBuf, 0, 1024U);
 
-    lBuf[0U]  = 'A';
-    lBuf[1U]  = '\0';
+    lBuf[0U] = 'A';
+    lBuf[1U] = '\0';
     while ((lNumChars > 0) && strcmp("\n", lBuf)) { /* read & discard headers */
         lNumChars = getLine(pClient, lBuf, sizeof(lBuf));
     }
@@ -418,19 +427,19 @@ int acceptRequest(const int pClient, int * const pResult) {
         return -1;
     }
 
-    char *lQueryStr = nullptr;
-    int lNumChars   = 0;
+    char         *lQueryStr = nullptr;
+    unsigned int  lNumChars = 0;
 
     char lBuf[1024U], lMethodStr[256U], lURLStr[256U], lPath[512U];
     memset(lBuf,       0, 1024U);
     memset(lMethodStr, 0, 256U);
-    memset(lURLStr,       0, 256U);
+    memset(lURLStr,    0, 256U);
     memset(lPath,      0, 512U);
 
     lNumChars = getLine(pClient, lBuf, sizeof(lBuf));
     std::cout << "[DEBUG] <acceptRequest> Got \"" << std::string(lBuf) << "\" from the client. " << std::endl;
 
-    size_t i = 0, j = 0;
+    size_t i = 0U, j = 0U;
 
     /* Get the method from the client's request */
     while((!IS_SPACE(lBuf[j]) && (sizeof(lMethodStr) - 1 > i))) {
@@ -462,15 +471,19 @@ int acceptRequest(const int pClient, int * const pResult) {
         ++lQueryStr;
     }
     std::string lQuery = std::string(lQueryStr);
-    std::cout << "[DEBUG] <acceptRequest> The query is " << lQuery << " (empty = " << (lQuery.empty() ? "true" : "false") << ")" << std::endl;
+    if(lQuery.empty()) {
+        std::cout << "[DEBUG] <acceptRequest> No query found. " << std::endl;
+    } else {
+        std::cout << "[DEBUG] <acceptRequest> The query is " << lQuery << " (empty = " << (lQuery.empty() ? "true" : "false") << ")" << std::endl;
+    }
 
     /* What is the URL ? */
-    if("/" == lURL) {
+    if("/" == lURL || "/index.html" == lURL) {
         /* Home page */
     } else {
         /* Unimplemented */
         notFound(pClient);
-        std::cout << "[ERROR] Unknown URL !" << std::endl;
+        std::cout << "[ERROR] Unknown URL requested !" << std::endl;
         close(pClient);
         return -1;
     }
@@ -493,6 +506,7 @@ int acceptRequest(const int pClient, int * const pResult) {
         lMethod = REST_OPTIONS;
     } else {
         unimplemented(pClient);
+        std::cout << "[ERROR] <acceptRequest> Unknown REST method requested ! " << std::endl;
         close(pClient);
         return -1;
     }
@@ -505,6 +519,12 @@ int acceptRequest(const int pClient, int * const pResult) {
             break;
         case REST_POST:
             std::cout << "[DEBUG] <acceptRequest> Request is POST" << std::endl;
+            sRelay.switchState();
+            if(sRelay.isOn()) {
+                std::cout << "[DEBUG] <acceptRequest> Toggled relay, is now ON" << std::endl;
+            } else {
+                std::cout << "[DEBUG] <acceptRequest> Toggled relay, is now OFF" << std::endl;
+            }
             break;
         case REST_INDEX:
             std::cout << "[DEBUG] <acceptRequest> Request is INDEX" << std::endl;

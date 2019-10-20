@@ -10,6 +10,8 @@
 /* Includes -------------------------------------------- */
 #include "remoteRequest.hxx"
 
+#include "Relay.hxx"
+
 /* C++ System */
 #include <iostream>
 
@@ -28,17 +30,7 @@
 /* Variable declarations ------------------------------- */
 std::string sProgName;
 static int sVar = 0;
-std::string sWebStr = "HTTP/1.0 200 Ok\r\n"
-"Constant_Type: text/html\r\n"
-"\r\n"
-"<html lang=\"en\">\r\n"
-"    <head>\r\n"
-"        <title>web-example</title>\r\n"
-"    </head>\r\n"
-"    <body>\r\n"
-"        Hello there !\r\nGeneral Kenobi !\r\n"
-"    </body>\r\n"
-"</html>\r\n";
+elec::Relay sRelay(elec::RELAY_MODE_NORMAL);
 
 /* Support funtions ------------------------------------ */
 void usage(void) {
@@ -115,9 +107,6 @@ int main(const int argc, const char * const * const argv) {
             std::cout << "[DEBUG] Processed acceptRequest successfully !" << std::endl;
         }
     }
-
-    /* Printout the web page contents */
-    std::cout << "[DEBUG] Web page contents : " << std::endl << sWebStr << std::endl;
 
     /* Close the socket */
     close(lServerSocket);
