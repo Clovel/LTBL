@@ -242,53 +242,24 @@ void togglePage(const int pClient, const int pVar = 0) {
     std::string lTogglePage = "HTTP/1.0 200 Ok\r\n"
     "Content-Type: text/html\r\n"
     "\r\n"
-    "<html lang =\"en\">\r\n"
-    "    <link href=\"https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css\" rel=\"stylesheet\" />\r\n"
-    "    <script src=\"https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js\"></script>\r\n"
-    "    <title>web-example - Toggle switch</title>\r\n"
-    "    <body>\r\n"
-    "        <h2>Toggle Switch</h2>\r\n"
-    "        <h3>Switch is currently at value : " + std::string((sRelay.isOn() ? "ON" : "OFF")) + "<h3>\r\n"
-    "        <input type=\"button\" value=\"Click me\" onclick=\"post('/switch/', 'switch', '123'});\">\r\n"
-    "\r\n"
-    "        <script>\r\n" /* This is the begining of a JavaScript section */
-    "            /**\r\n"
-    "             * sends a request to the specified url from a form. this will change the window location.\r\n"
-    "             * @param {string} path the path to send the post request to\r\n"
-    "             * @param {object} params the paramiters to add to the url\r\n"
-    "             * @param {string} [method=post] the method to use on the form\r\n"
-    "             */\r\n"
-    "\r\n"
-    "            function post(path, paramName, paramValue, method='post') {\r\n"
-    "\r\n"
-    "                // The rest of this code assumes you are not using a library.\r\n"
-    "                // It can be made less wordy if you use one.\r\n"
-    "                const form = document.createElement('form');\r\n"
-    "                form.method = method;\r\n"
-    "                form.action = path + \"?\" + paramName + \"=\" + paramValue;\r\n"
-    "\r\n"
-    "                for (const key in params) {\r\n"
-    "                    if (params.hasOwnProperty(key)) {\r\n"
-    "                        const hiddenField = document.createElement('input');\r\n"
-    "                        hiddenField.type  = 'hidden';\r\n"
-    "                        hiddenField.name  = key;\r\n"
-    "                        hiddenField.value = params[key];\r\n"
-    "\r\n"
-    "                        form.appendChild(hiddenField);\r\n"
-    "                    }\r\n"
-    "                }\r\n"
-    "\r\n"
-    "                document.body.appendChild(form);\r\n"
-    "                form.submit();\r\n"
-    "            }\r\n"
-    "        </script>\r\n" /* End of JS section */
-    "\r\n"
-    "    </body>\r\n"
-    "</html>\r\n";
+    "<html lang =\"en\">"
+    "    <link href=\"https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css\" rel=\"stylesheet\" />"
+    "    <script src=\"https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js\"></script>"
+        
+    "    <title>web-example - Toggle switch</title>"
+    "    <body>"
+    "        <h2>Toggle Switch</h2>"
+    "        <h3>Switch is currently at value : " + std::string((sRelay.isOn() ? "ON" : "OFF")) + "<h3>"
+    "        <form action=\"\" method=\"post\">"
+    "            <input type=\"submit\" name=\"Toggle\" value=\"Toggle Lamp\" />"
+    "        </form>"
+    "    </body>"
+    "</html>";
 
     //std::cout << "[DEBUG] Toggle page code :" << std::endl << std::endl << lTogglePage << std::endl;
     std::cout << "[DEBUG] Sending the toggle page code !" << std::endl;
-    htmlSend(pClient, lTogglePage);
+    int lResult = htmlSend(pClient, lTogglePage);
+    std::cout << "[DEBUG] htmlSend returned " << lResult << std::endl;
 }
 /**********************************************************************/
 /* Send a regular file to the client.  Use headers, and report
@@ -519,12 +490,19 @@ int acceptRequest(const int pClient, int * const pResult) {
             break;
         case REST_POST:
             std::cout << "[DEBUG] <acceptRequest> Request is POST" << std::endl;
+
+            /* Switch the relays state */
             sRelay.switchState();
+
+            /* Check the relay's state, print it out */
             if(sRelay.isOn()) {
                 std::cout << "[DEBUG] <acceptRequest> Toggled relay, is now ON" << std::endl;
             } else {
                 std::cout << "[DEBUG] <acceptRequest> Toggled relay, is now OFF" << std::endl;
             }
+
+            /* Show the main page */
+            togglePage(pClient);
             break;
         case REST_INDEX:
             std::cout << "[DEBUG] <acceptRequest> Request is INDEX" << std::endl;

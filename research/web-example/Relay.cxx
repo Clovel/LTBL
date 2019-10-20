@@ -39,6 +39,7 @@ namespace elec {
                 return !mState;
             default:
                 std::cout << "[ERROR] Unknown relay mode, cannot know if it is on or off !" << std::endl;
+                return false;
                 break;
         }
     }
