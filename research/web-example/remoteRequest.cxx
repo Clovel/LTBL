@@ -17,18 +17,37 @@
 #include <sys/socket.h>
 
 #include <stdio.h>
-#include <string.h>
 
 #include <unistd.h>
 #include <stdlib.h>
 
 #include <ctype.h>
 
+#include <errno.h> /* For errno */
+#include <cstring> /* For strerror */
+
 /* Defines --------------------------------------------- */
 #define IS_SPACE(x) isspace((int)(x))
 
 /* Variable declarations ------------------------------- */
 extern elec::Relay sRelay;
+
+/* Forward declaration of private functions ------------ */
+int htmlSend(const int pClient, const char * const pStr);
+int htmlSend(const int pClient, const std::string pStr);
+
+int getLine(int pSock, char *pBuf, int pSize);
+void cat(const int pClient, FILE * const pResource);
+void serveFile(const int pClient, const char * const pFileName);
+void errorDie(const char * const sc);
+
+void unimplemented(const int pClient);
+void badRequest(const int pClient);
+void cannotExecute(const int pClient);
+void headers(const int pClient, const char * const pFileName);
+void notFound(const int pClient);
+void home(const int pClient);
+void togglePage(const int pClient);
 
 /* Functions ------------------------------------------- */
 int htmlSend(const int pClient, const char * const pStr) {
@@ -105,6 +124,36 @@ void cat(const int pClient, FILE * const pResource)
 }
 
 /**********************************************************************/
+/* Send a regular file to the client.  Use headers, and report
+ * errors to client if they occur.
+ * Parameters: a pointer to a file structure produced from the socket
+ *              file descriptor
+ *             the name of the file to serve */
+/**********************************************************************/
+void serveFile(const int pClient, const char * const pFileName)
+{
+    FILE         *lResource   = NULL;
+    unsigned int  lNumChars   = 1;
+    char          lBuf[1024U];
+    memset(lBuf, 0, 1024U);
+
+    lBuf[0U] = 'A';
+    lBuf[1U] = '\0';
+    while ((lNumChars > 0) && strcmp("\n", lBuf)) { /* read & discard headers */
+        lNumChars = getLine(pClient, lBuf, sizeof(lBuf));
+    }
+
+    lResource = fopen(pFileName, "r");
+    if (lResource == NULL) {
+        notFound(pClient);
+    } else {
+        headers(pClient, pFileName);
+        cat(pClient, lResource);
+    }
+    fclose(lResource);
+}
+
+/**********************************************************************/
 /* Print out an error message with perror() (for system errors; based
  * on value of errno, which indicates system call errors) and exit the
  * program indicating an error. */
@@ -141,7 +190,7 @@ void unimplemented(const int pClient)
 /* Inform the client that a request it has made has a problem.
  * Parameters: client socket */
 /**********************************************************************/
-void bad_request(const int pClient)
+void badRequest(const int pClient)
 {
     std::string lBadReq = "HTTP/1.0 400 BAD REQUEST\r\n"
     "Content-Type: text/html\r\n"
@@ -163,7 +212,7 @@ void bad_request(const int pClient)
 /* Inform the client that a CGI script could not be executed.
  * Parameter: the client socket descriptor. */
 /**********************************************************************/
-void cannot_execute(const int pClient)
+void cannotExecute(const int pClient)
 {
     std::string lExeError = "HTTP/1.0 500 Internal Server Error\r\n"
     "Content-Type: text/html\r\n"
@@ -220,8 +269,7 @@ void notFound(const int pClient)
 /**********************************************************************/
 /* Give a client a "found" status message. */
 /**********************************************************************/
-void home(const int pClient)
-{
+void home(const int pClient) {
     std::string lHome = "HTTP/1.0 200 Ok\r\n"
     "Content-Type: text/html\r\n"
     "\r\n"
@@ -238,7 +286,7 @@ void home(const int pClient)
     (void)htmlSend(pClient, lHome);
 }
 
-void togglePage(const int pClient, const int pVar = 0) {
+void togglePage(const int pClient) {
     std::string lTogglePage = "HTTP/1.0 200 Ok\r\n"
     "Content-Type: text/html\r\n"
     "\r\n"
@@ -258,132 +306,10 @@ void togglePage(const int pClient, const int pVar = 0) {
 
     //std::cout << "[DEBUG] Toggle page code :" << std::endl << std::endl << lTogglePage << std::endl;
     std::cout << "[DEBUG] Sending the toggle page code !" << std::endl;
-    int lResult = htmlSend(pClient, lTogglePage);
-    std::cout << "[DEBUG] htmlSend returned " << lResult << std::endl;
-}
-/**********************************************************************/
-/* Send a regular file to the client.  Use headers, and report
- * errors to client if they occur.
- * Parameters: a pointer to a file structure produced from the socket
- *              file descriptor
- *             the name of the file to serve */
-/**********************************************************************/
-void serve_file(const int pClient, const char * const pFileName)
-{
-    FILE         *lResource   = NULL;
-    unsigned int  lNumChars   = 1;
-    char          lBuf[1024U];
-    memset(lBuf, 0, 1024U);
 
-    lBuf[0U] = 'A';
-    lBuf[1U] = '\0';
-    while ((lNumChars > 0) && strcmp("\n", lBuf)) { /* read & discard headers */
-        lNumChars = getLine(pClient, lBuf, sizeof(lBuf));
-    }
-
-    lResource = fopen(pFileName, "r");
-    if (lResource == NULL) {
-        notFound(pClient);
-    } else {
-        headers(pClient, pFileName);
-        cat(pClient, lResource);
-    }
-    fclose(lResource);
-}
-
-
-/**********************************************************************/
-/* Execute a CGI script.  Will need to set environment variables as
- * appropriate.
- * Parameters: client socket descriptor
- *             path to the CGI script */
-/**********************************************************************/
-void execute_cgi(int client, const char *path,
-                 const char *method, const char *query_string)
-{
-    char    buf[1024];
-    int     cgi_output[2];
-    int     cgi_input[2];
-    pid_t   pid;
-    int     status;
-    int     i;
-    char    c;
-    int     numchars        = 1;
-    int     content_length  = -1;
-
-    buf[0]  = 'A';
-    buf[1]  = '\0';
-    if (strcasecmp(method, "GET") == 0) {
-        while ((numchars > 0) && strcmp("\n", buf)) { /* read & discard headers */
-            numchars = getLine(client, buf, sizeof(buf));
-        }
-    } else { /* POST */
-        numchars = getLine(client, buf, sizeof(buf));
-        while ((numchars > 0) && strcmp("\n", buf)) {
-            buf[15] = '\0';
-            if (strcasecmp(buf, "Content-Length:") == 0) {
-                content_length = atoi(&(buf[16]));
-            }
-            numchars = getLine(client, buf, sizeof(buf));
-        }
-        if (content_length == -1) {
-            bad_request(client);
-            return;
-        }
-    }
-
-    sprintf(buf, "HTTP/1.0 200 OK\r\n");
-    send(client, buf, strlen(buf), 0);
-
-    if (pipe(cgi_output) < 0) {
-        cannot_execute(client);
-        return;
-    }
-    if (pipe(cgi_input) < 0) {
-        cannot_execute(client);
-        return;
-    }
-
-    if ((pid = fork()) < 0) {
-        cannot_execute(client);
-        return;
-    }
-    if (pid == 0) { /* child: CGI script */
-        char    meth_env[255];
-        char    query_env[255];
-        char    length_env[255];
-
-        dup2(cgi_output[1], 1);
-        dup2(cgi_input[0], 0);
-        close(cgi_output[0]);
-        close(cgi_input[1]);
-        sprintf(meth_env, "REQUEST_METHOD=%s", method);
-        putenv(meth_env);
-        if (strcasecmp(method, "GET") == 0) {
-            sprintf(query_env, "QUERY_STRING=%s", query_string);
-            putenv(query_env);
-        } else { /* POST */
-            sprintf(length_env, "CONTENT_LENGTH=%d", content_length);
-            putenv(length_env);
-        }
-        execl(path, path, NULL);
-        exit(0);
-    } else { /* parent */
-        close(cgi_output[1]);
-        close(cgi_input[0]);
-        if (strcasecmp(method, "POST") == 0) {
-            for (i = 0; i < content_length; i++) {
-                recv(client, &c, 1, 0);
-                write(cgi_input[1], &c, 1);
-            }
-        }
-        while (read(cgi_output[0], &c, 1) > 0) {
-            send(client, &c, 1, 0);
-        }
-
-        close(cgi_output[0]);
-        close(cgi_input[1]);
-        waitpid(pid, &status, 0);
+    const int lResult = htmlSend(pClient, lTogglePage);
+    if(0 > lResult) {
+        std::cerr << "[ERROR] <home> togglePage failed with return code " << lResult << std::endl;
     }
 }
 
