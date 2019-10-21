@@ -45,7 +45,7 @@ int main(const int argc, const char * const * const argv) {
     sProgName = std::string(argv[0]);
 
     if(2 != argc) {
-        std::cerr << "[ERROR] Wrong number of arguments !" << std::cerr;
+        std::cerr << "[ERROR] Wrong number of arguments !" << std::endl;
         usage();
         exit(EXIT_FAILURE);
     }
