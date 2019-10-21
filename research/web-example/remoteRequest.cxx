@@ -51,11 +51,33 @@ void togglePage(const int pClient);
 
 /* Functions ------------------------------------------- */
 int htmlSend(const int pClient, const char * const pStr) {
-    return send(pClient, pStr, strlen(pStr), 0);
+    int lResult = 0;
+    
+    errno = 0;
+    lResult = send(pClient, pStr, strlen(pStr), 0);
+    if(0 > lResult) {
+        std::cerr << "[ERROR] <htmlSend> send failed with error code " << lResult << std::endl;
+        if(errno) {
+            std::cerr << "        errno = " << errno << ", " << strerror(errno) << std::endl;
+        }
+    }
+
+    return lResult;
 }
 
 int htmlSend(const int pClient, const std::string pStr) {
-    return send(pClient, pStr.c_str(), pStr.length(), 0);
+    int lResult = 0;
+    
+    errno = 0;
+    lResult = send(pClient, pStr.c_str(), pStr.length(), 0);
+    if(0 > lResult) {
+        std::cerr << "[ERROR] <htmlSend> send failed with error code " << lResult << std::endl;
+        if(errno) {
+            std::cerr << "        errno = " << errno << ", " << strerror(errno) << std::endl;
+        }
+    }
+
+    return lResult;
 }
 
 /**********************************************************************/
@@ -76,29 +98,38 @@ int getLine(int pSock, char *pBuf, int pSize)
     int i = 0, n = 0;
     char c = '\0';
 
-    while ((i < pSize - 1) && (c != '\n'))
-    {
+    while ((i < pSize - 1) && (c != '\n')) {
+        errno = 0;
         n = recv(pSock, &c, 1, 0);
         /* DEBUG printf("%02X\n", c); */
-        if (n > 0)
-        {
-            if (c == '\r')
-            {
+        if (n > 0) {
+            if (c == '\r') {
                 n = recv(pSock, &c, 1, MSG_PEEK);
                 /* DEBUG printf("%02X\n", c); */
-                if ((n > 0) && (c == '\n'))
+                if ((n > 0) && (c == '\n')) {
                     recv(pSock, &c, 1, 0);
-                else
+                    if (errno) {
+                        std::cerr << "[ERROR] <getLine> recv failed : errno = " << errno << ", " << strerror(errno) << std::endl;
+                    }
+                } else if (errno) {
+                    std::cerr << "[ERROR] <getLine> recv failed : errno = " << errno << ", " << strerror(errno) << std::endl;
+                } else {
                     c = '\n';
+                }
             }
+
             pBuf[i++] = c;
+        } else if (errno) {
+            std::cerr << "[ERROR] <getLine> recv failed : errno = " << errno << ", " << strerror(errno) << std::endl;
         }
-        else
-        c = '\n';
+        else {
+            c = '\n';
+        }
     }
+
     pBuf[i] = '\0';
 
-    return(i);
+    return i;
 }
 
 /**********************************************************************/
@@ -108,8 +139,7 @@ int getLine(int pSock, char *pBuf, int pSize)
  * Parameters: the client socket descriptor
  *             FILE pointer for the file to cat */
 /**********************************************************************/
-void cat(const int pClient, FILE * const pResource)
-{
+void cat(const int pClient, FILE * const pResource) {
     char lBuf[1024U];
     memset(lBuf, 0, 1024U);
 
@@ -118,7 +148,11 @@ void cat(const int pClient, FILE * const pResource)
 
     /* Send the contents of the file into the socket */
     while (!feof(pResource)) {
+        errno = 0;
         send(pClient, lBuf, strlen(lBuf), 0);
+        if(errno) {
+            std::cerr << "[ERROR] <cat> send failed : errno = " << errno << ", " << strerror(errno) << std::endl;
+        }
         fgets(lBuf, sizeof(lBuf), pResource);
     }
 }
@@ -130,15 +164,15 @@ void cat(const int pClient, FILE * const pResource)
  *              file descriptor
  *             the name of the file to serve */
 /**********************************************************************/
-void serveFile(const int pClient, const char * const pFileName)
-{
-    FILE         *lResource   = NULL;
+void serveFile(const int pClient, const char * const pFileName) {
+    FILE         *lResource   = nullptr;
     unsigned int  lNumChars   = 1;
     char          lBuf[1024U];
     memset(lBuf, 0, 1024U);
 
     lBuf[0U] = 'A';
     lBuf[1U] = '\0';
+
     while ((lNumChars > 0) && strcmp("\n", lBuf)) { /* read & discard headers */
         lNumChars = getLine(pClient, lBuf, sizeof(lBuf));
     }
@@ -150,6 +184,7 @@ void serveFile(const int pClient, const char * const pFileName)
         headers(pClient, pFileName);
         cat(pClient, lResource);
     }
+    
     fclose(lResource);
 }
 
