@@ -183,7 +183,10 @@ void unimplemented(const int pClient)
     "    </body>\r\n"
     "</html>\r\n";
     
-    htmlSend(pClient, lUnimplemented);
+    const int lResult = htmlSend(pClient, lUnimplemented);
+    if(0 > lResult) {
+        std::cerr << "[ERROR] <unimplemented> htmlSend failed with return code " << lResult << std::endl;
+    }
 }
 
 /**********************************************************************/
@@ -205,7 +208,10 @@ void badRequest(const int pClient)
     "    </body>\r\n"
     "</html>\r\n";
 
-    (void)htmlSend(pClient, lBadReq);
+    const int lResult = htmlSend(pClient, lBadReq);
+    if(0 > lResult) {
+        std::cerr << "[ERROR] <badRequest> htmlSend failed with return code " << lResult << std::endl;
+    }
 }
 
 /**********************************************************************/
@@ -226,7 +232,10 @@ void cannotExecute(const int pClient)
     "    </body>\r\n"
     "</html>\r\n";
 
-    (void)htmlSend(pClient, lExeError);
+    const int lResult = htmlSend(pClient, lExeError);
+    if(0 > lResult) {
+        std::cerr << "[ERROR] <cannotExecute> htmlSend failed with return code " << lResult << std::endl;
+    }
 }
 
 /**********************************************************************/
@@ -240,7 +249,10 @@ void headers(const int pClient, const char * const pFileName)
     "Content-Type: text/html\r\n"
     "\r\n";
 
-    (void)htmlSend(pClient, lHeader);
+    const int lResult = htmlSend(pClient, lHeader);
+    if(0 > lResult) {
+        std::cerr << "[ERROR] <headers> htmlSend failed with return code " << lResult << std::endl;
+    }
 }
 
 /**********************************************************************/
@@ -263,7 +275,10 @@ void notFound(const int pClient)
     "    </body>\r\n"
     "</html>\r\n";
 
-    (void)htmlSend(pClient, l404);
+    const int lResult = htmlSend(pClient, l404);
+    if(0 > lResult) {
+        std::cerr << "[ERROR] <notFound> htmlSend failed with return code " << lResult << std::endl;
+    }
 }
 
 /**********************************************************************/
@@ -283,7 +298,10 @@ void home(const int pClient) {
     "    </body>\r\n"
     "</html>\r\n";
 
-    (void)htmlSend(pClient, lHome);
+    const int lResult = htmlSend(pClient, lHome);
+    if(0 > lResult) {
+        std::cerr << "[ERROR] <home> htmlSend failed with return code " << lResult << std::endl;
+    }
 }
 
 void togglePage(const int pClient) {
