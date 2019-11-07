@@ -89,6 +89,17 @@ int main(const int argc, const char * const * const argv) {
         exit(EXIT_FAILURE);
     }
 
+    /* Setting the socket options */
+    errno = 0;
+    int lEnableOpt = 1;
+    if (0 > setsockopt(lServerSocket, SOL_SOCKET, SO_REUSEADDR & SO_REUSEPORT, &lEnableOpt, sizeof(int))) {
+        std::cout << "[ERROR] setsockopt failed to set server socket options !" << std::endl;
+        if(errno) {
+            std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
+        }
+        exit(EXIT_FAILURE);
+    }
+
     /* Bind socket */
     errno = 0;
     lResult = bind(lServerSocket, (struct sockaddr *)&lServerSocketName, sizeof(lServerSocketName));
