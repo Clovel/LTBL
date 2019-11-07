@@ -151,6 +151,9 @@ int main(const int argc, const char * const * const argv) {
             /* handle error */
         }
 
+        /* Sleep a while to give the browser some time to process */
+        usleep(10000);
+
         lError = acceptRequest(lClientSocket, &sVar);
         if(0 != lError) {
             std::cerr << "[ERROR] Failed to process remote request w/ acceptRequest !" << std::endl;

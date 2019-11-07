@@ -582,6 +582,7 @@ int acceptRequest(const int pClient, int * const pResult) {
     }
 
     /* Close the client */
+    usleep(10000);
     close(pClient);
 
     return 0;
