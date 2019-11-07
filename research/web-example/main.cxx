@@ -126,6 +126,12 @@ int main(const int argc, const char * const * const argv) {
         lResult = 0;
     }
 
+    /* Voiding variables to fix warnings */
+    /* TODO : Fix this correctly */
+    (void)lServerHostPtr;
+    (void)lServerSocketNameLen;
+    (void)lClientHostPtr;
+
     /* Enter main loop */
     std::cout << "[INFO ] Server is listening..." << std::endl;
     int lError = 0;
@@ -154,6 +160,7 @@ int main(const int argc, const char * const * const argv) {
         /* Sleep a while to give the browser some time to process */
         usleep(10000);
 
+        /* Process the received request */
         lError = acceptRequest(lClientSocket, &sVar);
         if(0 != lError) {
             std::cerr << "[ERROR] Failed to process remote request w/ acceptRequest !" << std::endl;
