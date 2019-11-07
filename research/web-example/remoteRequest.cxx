@@ -280,7 +280,7 @@ void unimplemented(const int pClient)
     "    <body>\r\n"
     "        HTTP request method not supported.\r\n"
     "    </body>\r\n"
-    "</html>\r\n";
+    "</html>\r\n\r\n";
     
     const int lResult = htmlSend(pClient, lUnimplemented);
     if(0 > lResult) {
@@ -305,7 +305,7 @@ void badRequest(const int pClient)
     "        Your browser sent a bad request, "
     "        such as a POST without a Content-Length.\r\n"
     "    </body>\r\n"
-    "</html>\r\n";
+    "</html>\r\n\r\n";
 
     const int lResult = htmlSend(pClient, lBadReq);
     if(0 > lResult) {
@@ -329,7 +329,7 @@ void cannotExecute(const int pClient)
     "    <body>\r\n"
     "        Server-side error prohibited execution."
     "    </body>\r\n"
-    "</html>\r\n";
+    "</html>\r\n\r\n";
 
     const int lResult = htmlSend(pClient, lExeError);
     if(0 > lResult) {
@@ -372,7 +372,7 @@ void notFound(const int pClient)
     "        <br>\r\n"
     "        Please check that you entered the correct URL.\r\n"
     "    </body>\r\n"
-    "</html>\r\n";
+    "</html>\r\n\r\n";
 
     const int lResult = htmlSend(pClient, l404);
     if(0 > lResult) {
@@ -395,7 +395,7 @@ void home(const int pClient) {
     "        Hello there !<br>\r\n"
     "        General Kenobi !\r\n"
     "    </body>\r\n"
-    "</html>\r\n";
+    "</html>\r\n\r\n";
 
     const int lResult = htmlSend(pClient, lHome);
     if(0 > lResult) {
@@ -407,21 +407,23 @@ void togglePage(const int pClient) {
     std::string lTogglePage = "HTTP/1.0 200 Ok\r\n"
     "Content-Type: text/html\r\n"
     "\r\n"
-    "<html lang =\"en\">"
-    "    <link href=\"https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css\" rel=\"stylesheet\" />"
-    "    <script src=\"https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js\"></script>"
-        
-    "    <title>web-example - Toggle switch</title>"
-    "    <body>"
-    "        <h2>Toggle Switch</h2>"
-    "        <h3>Switch is currently at value : " + std::string((sRelay.isOn() ? "ON" : "OFF")) + "<h3>"
-    "        <form action=\"\" method=\"post\">"
-    "            <input type=\"submit\" name=\"Toggle\" value=\"Toggle Lamp\" />"
-    "        </form>"
-    "    </body>"
-    "</html>";
+    "<html lang =\"en\">\r\n"
+    "    <link href=\"https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css\" rel=\"stylesheet\" />\r\n"
+    "    <script src=\"https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js\"></script>\r\n"
+    "<head>\r\n"
+    "    <meta charset=\"utf-8\">\r\n"
+    "    <title>web-example - Toggle switch</title>\r\n"
+    "</head>\r\n"
+    "\r\n"
+    "    <body>\r\n"
+    "        <h2>Toggle Switch</h2>\r\n"
+    "        <h3>Switch is currently at value : " + std::string((sRelay.isOn() ? "ON" : "OFF")) + "<h3>\r\n"
+    "        <form action=\"/toggle\" method=\"get\">\r\n"
+    "            <input type=\"submit\" name=\"Toggle Lamp\" value=\"Toggle Lamp\" />\r\n"
+    "        </form>\r\n"
+    "    </body>\r\n"
+    "</html>\r\n\r\n";
 
-    //std::cout << "[DEBUG] Toggle page code :" << std::endl << std::endl << lTogglePage << std::endl;
     std::cout << "[DEBUG] Sending the toggle page code !" << std::endl;
 
     const int lResult = htmlSend(pClient, lTogglePage);
