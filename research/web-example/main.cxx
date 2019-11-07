@@ -158,6 +158,8 @@ int main(const int argc, const char * const * const argv) {
         } else {
             std::cout << "[DEBUG] Processed acceptRequest successfully !" << std::endl;
         }
+
+        std::cout << std::endl;
     }
 
     /* Close the socket */
