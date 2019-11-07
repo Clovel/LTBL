@@ -248,7 +248,7 @@ void serveFile(const int pClient, const char * const pFileName) {
         headers(pClient, pFileName);
         cat(pClient, lResource);
     }
-    
+
     fclose(lResource);
 }
 
@@ -426,7 +426,9 @@ void togglePage(const int pClient) {
 
     const int lResult = htmlSend(pClient, lTogglePage);
     if(0 > lResult) {
-        std::cerr << "[ERROR] <home> togglePage failed with return code " << lResult << std::endl;
+        std::cerr << "[ERROR] <togglePage> htmlSend failed with return code " << lResult << std::endl;
+    } else {
+        //std::cout << "[DEBUG] Toggle page code sent :" << std::endl << std::endl << lTogglePage << std::endl;
     }
 }
 

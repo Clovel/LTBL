@@ -105,7 +105,7 @@ int main(const int argc, const char * const * const argv) {
     errno = 0;
     lResult = bind(lServerSocket, (struct sockaddr *)&lServerSocketName, sizeof(lServerSocketName));
     if(-1 == lResult) {
-        std::cerr << "[ERROR] Failed to bind the socket ! (" << lResult << ")" << std::endl;
+        std::cerr << "[ERROR] Failed to bind the server socket ! (" << lResult << ")" << std::endl;
         if(errno) {
             std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
         }
@@ -118,7 +118,7 @@ int main(const int argc, const char * const * const argv) {
     errno = 0;
     lResult = listen(lServerSocket, MAX_REQUEST_NB);
     if(-1 == lResult) {
-        std::cerr << "[ERROR] listen failed with error code " << lResult << std::endl;
+        std::cerr << "[ERROR] listen on server socket failed with error code " << lResult << std::endl;
         if(errno) {
             std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
         }
@@ -133,7 +133,6 @@ int main(const int argc, const char * const * const argv) {
         /* Get client socket */
         errno = 0;
         lClientSocket = accept(lServerSocket, (struct sockaddr *)&lClientSocketName, &lClientSocketNameLen);
-
         if(-1 == lClientSocket) {
             std::cerr << "[ERROR] Failed to \"accept\" client socket" << std::endl;
             if(errno) {
