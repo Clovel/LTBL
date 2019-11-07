@@ -10,6 +10,8 @@
 /* Includes -------------------------------------------- */
 #include "remoteRequest.hxx"
 
+#include "Relay.hxx"
+
 /* C++ System */
 #include <iostream>
 
@@ -20,7 +22,11 @@
 
 #include <pthread.h>
 
-#include <unistd.h> /* cloe(int fd) */
+#include <unistd.h> /* close(int fd) */
+#include <fcntl.h>  /* To set client socket to O_NONBLOCK */
+
+#include <errno.h> /* For errno */
+#include <cstring> /* For strerror */
 
 /* Defines --------------------------------------------- */
 #define MAX_REQUEST_NB 5U
@@ -28,17 +34,7 @@
 /* Variable declarations ------------------------------- */
 std::string sProgName;
 static int sVar = 0;
-std::string sWebStr = "HTTP/1.0 200 Ok\r\n"
-"Constant_Type: text/html\r\n"
-"\r\n"
-"<html lang=\"en\">\r\n"
-"    <head>\r\n"
-"        <title>web-example</title>\r\n"
-"    </head>\r\n"
-"    <body>\r\n"
-"        Hello there !\r\nGeneral Kenobi !\r\n"
-"    </body>\r\n"
-"</html>\r\n";
+elec::Relay sRelay(elec::RELAY_MODE_NORMAL);
 
 /* Support funtions ------------------------------------ */
 void usage(void) {
@@ -53,7 +49,7 @@ int main(const int argc, const char * const * const argv) {
     sProgName = std::string(argv[0]);
 
     if(2 != argc) {
-        std::cerr << "[ERROR] Wrong number of arguments !" << std::cerr;
+        std::cerr << "[ERROR] Wrong number of arguments !" << std::endl;
         usage();
         exit(EXIT_FAILURE);
     }
@@ -79,45 +75,101 @@ int main(const int argc, const char * const * const argv) {
     lServerSocketName.sin_addr.s_addr = htonl(INADDR_ANY);
 
     /* Declaring thread */
-    pthread_t lThread;
+    //pthread_t lThread;
+
+    /* Initializing error variable */
+    int lResult = 0;
 
     /* Creating the TCP socket */
+    errno = 0;
     if(0 > (lServerSocket = socket(AF_INET, SOCK_STREAM, 0))) {
         std::cerr << "[ERROR] Failed to create the socket (lServerSocket = " << lServerSocket << ") !" << std::endl;
+        if(errno) {
+            std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
+        }
+        exit(EXIT_FAILURE);
+    }
+
+    /* Setting the socket options */
+    errno = 0;
+    int lEnableOpt = 1;
+    if (0 > setsockopt(lServerSocket, SOL_SOCKET, SO_REUSEADDR & SO_REUSEPORT, &lEnableOpt, sizeof(int))) {
+        std::cout << "[ERROR] setsockopt failed to set server socket options !" << std::endl;
+        if(errno) {
+            std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
+        }
         exit(EXIT_FAILURE);
     }
 
     /* Bind socket */
-    if(-1 == bind(lServerSocket, (struct sockaddr *)&lServerSocketName, sizeof(lServerSocketName))) {
-        std::cerr << "[ERROR] Failed to bind the socket !" << std::endl;
+    errno = 0;
+    lResult = bind(lServerSocket, (struct sockaddr *)&lServerSocketName, sizeof(lServerSocketName));
+    if(-1 == lResult) {
+        std::cerr << "[ERROR] Failed to bind the server socket ! (" << lResult << ")" << std::endl;
+        if(errno) {
+            std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
+        }
         exit(EXIT_FAILURE);
+    } else {
+        lResult = 0;
     }
 
     /* Initializing the request queue */
-    listen(lServerSocket, MAX_REQUEST_NB);
+    errno = 0;
+    lResult = listen(lServerSocket, MAX_REQUEST_NB);
+    if(-1 == lResult) {
+        std::cerr << "[ERROR] listen on server socket failed with error code " << lResult << std::endl;
+        if(errno) {
+            std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
+        }
+    } else {
+        lResult = 0;
+    }
+
+    /* Voiding variables to fix warnings */
+    /* TODO : Fix this correctly */
+    (void)lServerHostPtr;
+    (void)lServerSocketNameLen;
+    (void)lClientHostPtr;
 
     /* Enter main loop */
     std::cout << "[INFO ] Server is listening..." << std::endl;
     int lError = 0;
     while(true) {
         /* Get client socket */
+        errno = 0;
         lClientSocket = accept(lServerSocket, (struct sockaddr *)&lClientSocketName, &lClientSocketNameLen);
-
         if(-1 == lClientSocket) {
             std::cerr << "[ERROR] Failed to \"accept\" client socket" << std::endl;
+            if(errno) {
+                std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
+            }
             exit(EXIT_FAILURE);
         }
 
+        /* Test if the socket is in non-blocking mode */
+        if(fcntl(lClientSocket, F_GETFL) & O_NONBLOCK) {
+            /* socket is non-blocking */
+        }
+
+        /* Put the socket in non-blocking mode */
+        if(fcntl(lClientSocket, F_SETFL, fcntl(lClientSocket, F_GETFL) | O_NONBLOCK) < 0) {
+            /* handle error */
+        }
+
+        /* Sleep a while to give the browser some time to process */
+        usleep(10000);
+
+        /* Process the received request */
         lError = acceptRequest(lClientSocket, &sVar);
         if(0 != lError) {
             std::cerr << "[ERROR] Failed to process remote request w/ acceptRequest !" << std::endl;
         } else {
             std::cout << "[DEBUG] Processed acceptRequest successfully !" << std::endl;
         }
-    }
 
-    /* Printout the web page contents */
-    std::cout << "[DEBUG] Web page contents : " << std::endl << sWebStr << std::endl;
+        std::cout << std::endl;
+    }
 
     /* Close the socket */
     close(lServerSocket);

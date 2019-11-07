@@ -1,0 +1,83 @@
+<form action= method=post>
+    <input type=submit name=upvote value=Upvote />
+</form>
+
+<html lang ="en">
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet" />
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+    <title>web-example - Toggle switch</title>
+    <body>
+        <h2>Toggle Switch</h2>
+        <h3>Switch is currently at value : " + std::string((sRelay.isOn() ? "ON" : "OFF")) + "<h3>
+        <input type="button" value="Click me" onclick="post('/switch/', 'switch', '123');" />
+
+        <script> /* This is the begining of a JavaScript section */
+            /**
+             * sends a request to the specified url from a form. this will change the window location.
+             * @param {string} path the path to send the post request to
+             * @param {object} params the paramiters to add to the url
+             * @param {string} [method=post] the method to use on the form
+             */
+
+            function post(path, paramName, paramValue, method="post") {
+
+                // The rest of this code assumes you are not using a library.
+                // It can be made less wordy if you use one.
+                const form = document.createElement("form");
+                form.method = method;
+                form.action = path + "?" + paramName + "=" + paramValue;
+
+                for (const key in params) {
+                    if (params.hasOwnProperty(key)) {
+                        const hiddenField = document.createElement("input");
+                        hiddenField.type  = "hidden";
+                        hiddenField.name  = key;
+                        hiddenField.value = params[key];
+
+                        form.appendChild(hiddenField);
+                    }
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        </script>
+    </body>
+</html>
+
+<form action="" method=post>
+    <input type=submit name=upvote value=Upvote />
+</form>
+
+<html lang ="en">
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet" />
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    <meta charset="utf-8">
+    
+    <title>web-example - Toggle switch</title>
+    <body>
+        <h2>Toggle Switch</h2>
+        <h3>Switch is currently at value : " + std::string((sRelay.isOn() ? ON : OFF)) + "<h3>
+
+        <a href="/toggle" class="button">Toggle</a>
+
+    </body>
+</html>
+
+<html lang ="en">
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet" />
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    
+    <title>web-example - Toggle switch</title>
+    <body>
+        <h2>Toggle Switch</h2>
+        <h3>Switch is currently at value : " + std::string((sRelay.isOn() ? ON : OFF)) + "<h3>
+
+        <form action="" method="post">
+            <input type="submit" name="upvote" value="Upvote" />
+        </form>
+
+    </body>
+</html>
+
