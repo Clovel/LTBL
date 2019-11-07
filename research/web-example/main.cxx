@@ -24,6 +24,9 @@
 
 #include <unistd.h> /* cloe(int fd) */
 
+#include <errno.h> /* For errno */
+#include <cstring> /* For strerror */
+
 /* Defines --------------------------------------------- */
 #define MAX_REQUEST_NB 5U
 
@@ -71,32 +74,59 @@ int main(const int argc, const char * const * const argv) {
     lServerSocketName.sin_addr.s_addr = htonl(INADDR_ANY);
 
     /* Declaring thread */
-    pthread_t lThread;
+    //pthread_t lThread;
+
+    /* Initializing error variable */
+    int lResult = 0;
 
     /* Creating the TCP socket */
+    errno = 0;
     if(0 > (lServerSocket = socket(AF_INET, SOCK_STREAM, 0))) {
         std::cerr << "[ERROR] Failed to create the socket (lServerSocket = " << lServerSocket << ") !" << std::endl;
+        if(errno) {
+            std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
+        }
         exit(EXIT_FAILURE);
     }
 
     /* Bind socket */
-    if(-1 == bind(lServerSocket, (struct sockaddr *)&lServerSocketName, sizeof(lServerSocketName))) {
-        std::cerr << "[ERROR] Failed to bind the socket !" << std::endl;
+    errno = 0;
+    lResult = bind(lServerSocket, (struct sockaddr *)&lServerSocketName, sizeof(lServerSocketName));
+    if(-1 == lResult) {
+        std::cerr << "[ERROR] Failed to bind the socket ! (" << lResult << ")" << std::endl;
+        if(errno) {
+            std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
+        }
         exit(EXIT_FAILURE);
+    } else {
+        lResult = 0;
     }
 
     /* Initializing the request queue */
-    listen(lServerSocket, MAX_REQUEST_NB);
+    errno = 0;
+    lResult = listen(lServerSocket, MAX_REQUEST_NB);
+    if(-1 == lResult) {
+        std::cerr << "[ERROR] listen failed with error code " << lResult << std::endl;
+        if(errno) {
+            std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
+        }
+    } else {
+        lResult = 0;
+    }
 
     /* Enter main loop */
     std::cout << "[INFO ] Server is listening..." << std::endl;
     int lError = 0;
     while(true) {
         /* Get client socket */
+        errno = 0;
         lClientSocket = accept(lServerSocket, (struct sockaddr *)&lClientSocketName, &lClientSocketNameLen);
 
         if(-1 == lClientSocket) {
             std::cerr << "[ERROR] Failed to \"accept\" client socket" << std::endl;
+            if(errno) {
+                std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
+            }
             exit(EXIT_FAILURE);
         }
 
