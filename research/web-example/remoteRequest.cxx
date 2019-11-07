@@ -10,6 +10,8 @@
 
 #include "Relay.hxx"
 
+#include "HttpRequest.hxx"
+
 /* C++ System */
 #include <iostream>
 
@@ -445,83 +447,82 @@ int acceptRequest(const int pClient, int * const pResult) {
         return -1;
     }
 
-    char         *lQueryStr = nullptr;
-    unsigned int  lNumChars = 0;
+    int lNumChars = 0;
 
-    char lBuf[1024U], lMethodStr[256U], lURLStr[256U], lPath[512U];
-    memset(lBuf,       0, 1024U);
-    memset(lMethodStr, 0, 256U);
-    memset(lURLStr,    0, 256U);
-    memset(lPath,      0, 512U);
+    HttpRequest lRequest;
 
-    lNumChars = getLine(pClient, lBuf, sizeof(lBuf));
-    std::cout << "[DEBUG] <acceptRequest> Got \"" << std::string(lBuf) << "\" from the client. " << std::endl;
+    char lBuf[1024U];
+    memset(lBuf, 0, 1024U);
 
-    size_t i = 0U, j = 0U;
+    std::string lRequestStr;
+    do {
+        lNumChars = 0;
+        /* Reset the buffer to receive the line */
+        memset(lBuf, 0, 1024U);
 
-    /* Get the method from the client's request */
-    while((!IS_SPACE(lBuf[j]) && (sizeof(lMethodStr) - 1 > i))) {
-        lMethodStr[i++] = lBuf[j++];
-    }
-    lMethodStr[i] = '\0'; /* NULL terminate the method */
+        /* Get the line */
+        lNumChars = getLine(pClient, lBuf, sizeof(lBuf));
+        //std::cout << "[DEBUG] <acceptRequest> Got \"" << std::string(lBuf) << "\" from the client. " << std::endl;
 
-    /* Get the URL of the request from the client's request */
-    i = 0;
-    while(IS_SPACE(lBuf[j]) && (sizeof(lBuf) > j)) {
-        ++j;
-    }
-    while (!IS_SPACE(lBuf[j]) && (sizeof(lURLStr) - 1 > i) && (sizeof(lBuf) > j)) {
-        lURLStr[i++] = lBuf[j++];
-    }
-    lURLStr[i] = '\0'; /* NULL terminate the URL */
-    std::string lURL(lURLStr);
-    std::cout << "[DEBUG] <acceptRequest> The URL is " << lURL << std::endl;
+        if(0 > lNumChars) {
+            std::cerr << "[ERROR] <acceptRequest> getLine failed, returned " << lNumChars << std::endl;
+            return -1;
+        } else if(0 == lNumChars) {
+            std::cout << "[WARN ] <acceptRequest> Read 0 characters !" << std::endl;
+        } else if(std::string(lBuf).empty()) {
+            std::cout << "[WARN ] <acceptRequest> Got an empty line !" << std::endl;
+            if(lNumChars) {
+                std::cerr << "[ERROR] <acceptRequest> Got an empty line, but lNumChars = " << lNumChars << std::endl;
+                return -1;
+            }
+        }
 
-    /* Get the query from the client's request */
-    lQueryStr = lURLStr;
-    while(('?' != *lQueryStr) && ('\0' != *lQueryStr)) {
-        ++lQueryStr;
-    }
-
-    /* The real query is located after the "?" symbol */
-    if('?' == *lQueryStr) {
-        *lQueryStr = '\0';
-        ++lQueryStr;
-    }
-    std::string lQuery = std::string(lQueryStr);
-    if(lQuery.empty()) {
-        std::cout << "[DEBUG] <acceptRequest> No query found. " << std::endl;
-    } else {
-        std::cout << "[DEBUG] <acceptRequest> The query is " << lQuery << " (empty = " << (lQuery.empty() ? "true" : "false") << ")" << std::endl;
-    }
-
-    /* What is the URL ? */
-    if("/" == lURL || "/index.html" == lURL) {
-        /* Home page */
-    } else {
-        /* Unimplemented */
-        notFound(pClient);
-        std::cout << "[ERROR] Unknown URL requested !" << std::endl;
+        /* Append the line to the request */
+        lRequestStr += std::string(lBuf);
+    } while(0 < lNumChars);
+    
+    /* Print out what we received */
+    //std::cout << "[DEBUG] <acceptRequest> lRequestStr = \"" << lRequestStr << "\"" << std::endl;
+    if(lRequestStr.empty()) {
+        std::cout << "[WARN ] Go an empty request, exiting..." << std::endl;
         close(pClient);
         return -1;
     }
+    lRequest.parseRequest(lRequestStr);
+
+    /* Get the method from the client's request */
+    std::string lMethod = lRequest.method();
+    std::cout << "[DEBUG] <acceptRequest> The method is " << lMethod << std::endl;
+
+    /* Get the URL of the request from the client's request */
+    std::cout << "[DEBUG] <acceptRequest> The complete URL is : " << lRequest.URL() << std::endl;
+    std::cout << "[DEBUG] <acceptRequest> The short URL is    : " << lRequest.shortURL() << std::endl;
+    std::string lURL = lRequest.shortURL();
+
+    /* The real query is located after the "?" symbol */
+    std::string lQuery = lRequest.query();
+    if(lQuery.empty()) {
+        std::cout << "[DEBUG] <acceptRequest> No query found. " << std::endl;
+    } else {
+        std::cout << "[DEBUG] <acceptRequest> The query is " << lQuery << std::endl;
+    }
 
     /* What method is it ? */
-    restMethod_t lMethod = REST_UNKNOWN;
-    if(0 == strcasecmp("GET", lMethodStr)) {
-        lMethod = REST_GET;
-    } else if (0 == strcasecmp("POST", lMethodStr)) {
-        lMethod = REST_POST;
-    } else if (0 == strcasecmp("PUT", lMethodStr)) {
-        lMethod = REST_PUT;
-    } else if (0 == strcasecmp("HEAD", lMethodStr)) {
-        lMethod = REST_HEAD;
-    } else if (0 == strcasecmp("DELETE", lMethodStr)) {
-        lMethod = REST_DELETE;
-    } else if (0 == strcasecmp("PATCH", lMethodStr)) {
-        lMethod = REST_PATCH;
-    } else if (0 == strcasecmp("OPTIONS", lMethodStr)) {
-        lMethod = REST_OPTIONS;
+    restMethod_t lREST = REST_UNKNOWN;
+    if(0 == strcasecmp("GET", lMethod.c_str())) {
+        lREST = REST_GET;
+    } else if (0 == strcasecmp("POST", lMethod.c_str())) {
+        lREST = REST_POST;
+    } else if (0 == strcasecmp("PUT", lMethod.c_str())) {
+        lREST = REST_PUT;
+    } else if (0 == strcasecmp("HEAD", lMethod.c_str())) {
+        lREST = REST_HEAD;
+    } else if (0 == strcasecmp("DELETE", lMethod.c_str())) {
+        lREST = REST_DELETE;
+    } else if (0 == strcasecmp("PATCH", lMethod.c_str())) {
+        lREST = REST_PATCH;
+    } else if (0 == strcasecmp("OPTIONS", lMethod.c_str())) {
+        lREST = REST_OPTIONS;
     } else {
         unimplemented(pClient);
         std::cout << "[ERROR] <acceptRequest> Unknown REST method requested ! " << std::endl;
@@ -529,27 +530,39 @@ int acceptRequest(const int pClient, int * const pResult) {
         return -1;
     }
 
-    std::cout << "[DEBUG] <acceptRequest> Request str = " << std::string(lMethodStr) << std::endl;
-    switch(lMethod) {
+    switch(lREST) {
         case REST_GET:
             std::cout << "[DEBUG] <acceptRequest> Request is GET" << std::endl;
+
+            /* What is the URL ? */
+            if("/" == lURL || "/index.html" == lURL) {
+                /* Home page */
+            } else if ("/toggle" == lURL) {
+                /* Switch the relays state */
+                sRelay.switchState();
+
+                /* Check the relay's state, print it out */
+                if(sRelay.isOn()) {
+                    std::cout << "[DEBUG] <acceptRequest> Toggled relay, is now ON" << std::endl;
+                } else {
+                    std::cout << "[DEBUG] <acceptRequest> Toggled relay, is now OFF" << std::endl;
+                }
+            } else {
+                /* Unimplemented */
+                notFound(pClient);
+                std::cout << "[ERROR] Unknown URL requested !" << std::endl;
+                close(pClient);
+                return -1;
+            }
+
+            /* Send back the toggle page */
             togglePage(pClient);
             break;
         case REST_POST:
             std::cout << "[DEBUG] <acceptRequest> Request is POST" << std::endl;
-
-            /* Switch the relays state */
-            sRelay.switchState();
-
-            /* Check the relay's state, print it out */
-            if(sRelay.isOn()) {
-                std::cout << "[DEBUG] <acceptRequest> Toggled relay, is now ON" << std::endl;
-            } else {
-                std::cout << "[DEBUG] <acceptRequest> Toggled relay, is now OFF" << std::endl;
-            }
-
-            /* Show the main page */
-            togglePage(pClient);
+            unimplemented(pClient);
+            close(pClient);
+            return -1;
             break;
         case REST_INDEX:
             std::cout << "[DEBUG] <acceptRequest> Request is INDEX" << std::endl;
