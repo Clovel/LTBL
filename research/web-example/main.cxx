@@ -22,7 +22,8 @@
 
 #include <pthread.h>
 
-#include <unistd.h> /* cloe(int fd) */
+#include <unistd.h> /* close(int fd) */
+#include <fcntl.h>  /* To set client socket to O_NONBLOCK */
 
 #include <errno.h> /* For errno */
 #include <cstring> /* For strerror */
@@ -139,6 +140,16 @@ int main(const int argc, const char * const * const argv) {
                 std::cerr << "        errno = " << errno << " : " << strerror(errno) << std::endl;
             }
             exit(EXIT_FAILURE);
+        }
+
+        /* Test if the socket is in non-blocking mode */
+        if(fcntl(lClientSocket, F_GETFL) & O_NONBLOCK) {
+            /* socket is non-blocking */
+        }
+
+        /* Put the socket in non-blocking mode */
+        if(fcntl(lClientSocket, F_SETFL, fcntl(lClientSocket, F_GETFL) | O_NONBLOCK) < 0) {
+            /* handle error */
         }
 
         lError = acceptRequest(lClientSocket, &sVar);
