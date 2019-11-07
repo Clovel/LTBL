@@ -2,7 +2,7 @@
  * Copyright Clovis Durand
  * Let There Be Light project
  * 
- * @file acceptRequest.hxx
+ * @file remoteRequest.hxx
  */
 
 /* Includes -------------------------------------------- */
