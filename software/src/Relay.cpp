@@ -34,6 +34,7 @@ namespace elec {
         mPin(pPin),
         mMode(pMode)
     {
+        pinMode(mPin, OUTPUT);
         switch(mMode) {
             case RELAY_MODE_NORMAL:
                 mState = LOW;
@@ -53,14 +54,12 @@ namespace elec {
         }
     }
 
-    Relay::~Relay()
-    {
+    Relay::~Relay() {
         /* Empty */
     }
 
     /* Getters */
-    bool Relay::isOn(void) const
-    {
+    bool Relay::isOn(void) const {
         switch(mMode) {
             case RELAY_MODE_NORMAL:
                 return mState;
@@ -77,20 +76,17 @@ namespace elec {
         }
     }
 
-    relayMode_t Relay::mode(void) const
-    {
+    relayMode_t Relay::mode(void) const {
         return mMode;
     }
 
     /* Setters */
-    void Relay::setMode(const relayMode_t &pMode)
-    {
+    void Relay::setMode(const relayMode_t &pMode) {
         mMode = pMode;
     }
 
     /* Actions */
-    void Relay::turnOn(void)
-    {
+    void Relay::turnOn(void) {
         switch(mMode) {
             case RELAY_MODE_NORMAL:
                 mState = HIGH;
@@ -110,8 +106,7 @@ namespace elec {
         }
     }
 
-    void Relay::turnOff(void)
-    {
+    void Relay::turnOff(void) {
         switch(mMode) {
             case RELAY_MODE_NORMAL:
                 mState = LOW;
@@ -131,11 +126,11 @@ namespace elec {
         }
     }
 
-    void Relay::switchState(void)
-    {
+    void Relay::switchState(void) {
         /* We don't realy care for the Relay mode here, 
          * We just change the state
          */
         mState = !mState;
+        digitalWrite(mPin, mState);
     }
 }

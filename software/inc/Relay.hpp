@@ -40,9 +40,9 @@ typedef enum _relayMode {
 
         protected:
         private:
-            gpioLevel_t mState;
-            relayMode_t mMode;
-
             gpioPin_t mPin;
+            relayMode_t mMode;
+            gpioLevel_t mState;
+
     };
 }
