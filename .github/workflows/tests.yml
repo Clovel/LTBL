@@ -25,5 +25,5 @@ jobs:
         run: make
 
       - name: CTest execution
-        working-directory: build
+        working-directory: build/tests
         run: ctest -VV
