@@ -1,0 +1,43 @@
+name: Project tests
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+
+    steps:
+      - name: Installing dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          set -x
+          sudo apt-get update
+          sudo apt-get install doxygen graphviz
+
+      - name: Installing dependencies (macOS)
+        if: matrix.os == 'macOS-latest'
+        run: |
+          set -x
+          brew update
+          brew install doxygen graphviz
+
+      - name: Checkout
+        uses: actions/checkout@v1
+      
+      - name: Create build directory
+        run: mkdir build
+      
+      - name: CMake generation
+        working-directory: build
+        run: cmake ..
+      
+      - name: Build tests
+        working-directory: build
+        run: make
+
+      - name: CTest execution
+        working-directory: build/software/tests/
+        run: ctest -VV
