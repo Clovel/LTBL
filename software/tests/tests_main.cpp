@@ -4,7 +4,7 @@
 
 /* Includes -------------------------------------------- */
 /* Gaussian */
-#include "tests_Relay.hxx"
+#include "tests_Relay.hpp"
 
 /* System */
 #include <iostream>

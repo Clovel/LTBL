@@ -3,7 +3,8 @@
  */
 
 /* Includes -------------------------------------------- */
-#include "Relay.hxx"
+#include "tests_Relay.hpp"
+#include "Relay.hpp"
 
 /* Tests ----------------------------------------------- */
 int test_Relay_isOn(void) {
