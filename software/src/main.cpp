@@ -2,17 +2,23 @@
  * @brief Main source file. Contains the main routines.
  */
 
+/* Includes -------------------------------------------- */
+#include "Relay.hpp"
+
 #include <Arduino.h>
 
-#define LED_GREEN_PIN D1
+/* Defines --------------------------------------------- */
+
+/* Global variables ------------------------------------ */
+elec::Relay *gRelay = nullptr;
 
 /* On-boot routine */
 void setup(void) {
     /* Set up the serial port for printing logs */
     Serial.begin(9600);
 
-    /* Set up LED pin */
-    pinMode(LED_GREEN_PIN, OUTPUT);
+    /* Init relay */
+    gRelay = new elec::Relay(D1, elec::RELAY_MODE_NORMAL);
 
     /* End of setup */
     Serial.println("[BOOT ] System booted !");
@@ -28,13 +34,8 @@ void loop(void) {
     Serial.println(")...");
 
     /* Turn the LED on */
-    digitalWrite(LED_GREEN_PIN, HIGH);
+    gRelay->switchState();
 
     /* Wait a little turning the LED back off */
-    delay(250);
-
-    digitalWrite(LED_GREEN_PIN, LOW);
-
-    /* Wait a little before looping back */
     delay(250);
 }
