@@ -13,8 +13,7 @@
 #include <cstring>
 
 /* Support functions ----------------------------------- */
-static void print_usage(const char * const pProgName)
-{
+static void print_usage(const char * const pProgName) {
     std::cout << "[USAGE] " << pProgName << " <test#>" << std::endl;
 }
 
@@ -36,8 +35,9 @@ int main(const int argc, const char * const * const argv) {
     switch (lTestNum) {
         case -1:
             std::cout << "[INFO ] Default test." << std::endl;
+            break;
         case 0:
-            lResult = test_Relay_isOn()
+            lResult = test_Relay_isOn();
             break;
         default:
             std::cout << "[INFO ] test #" << lTestNum << " not available" << std::endl;

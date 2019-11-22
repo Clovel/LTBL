@@ -71,9 +71,9 @@ int test_Relay_turnOff(void) {
 
     /* TurnOff */
     lRelay.turnOn();
-    
+
     /* Check the relay state */
-    lState = lRelay.isOff();
+    lState = lRelay.isOn();
     assert(false == lState);
 
     return EXIT_SUCCESS;
@@ -84,7 +84,7 @@ int test_Relay_setMode(void) {
     elec::Relay lRelay(13, elec::RELAY_MODE_NORMAL);
 
     /* Get mode */
-    relayMode_t lMode = lRelay.mode();
+    elec::relayMode_t lMode = lRelay.mode();
     assert(elec::RELAY_MODE_NORMAL == lMode);
 
     /* Set other mode */
