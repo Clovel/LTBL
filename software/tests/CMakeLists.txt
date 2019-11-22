@@ -13,8 +13,14 @@ set(CMAKE_PROJECT_BRIEF "LTBL tests")
 #------------------------------------------------------------------------------
 
 # Header files --------------------------------------------
-file(GLOB PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/software/inc/*.h ${CMAKE_SOURCE_DIR}/software/inc/*.hpp)
-file(GLOB PRIVATE_HEADERS ${CMAKE_SOURCE_DIR}/software/src/*.h ${CMAKE_SOURCE_DIR}/software/src/*.hpp)
+file(GLOB PUBLIC_HEADERS
+    ${CMAKE_SOURCE_DIR}/software/inc/*.h
+    ${CMAKE_SOURCE_DIR}/software/inc/*.hpp
+)
+file(GLOB PRIVATE_HEADERS
+    ${CMAKE_SOURCE_DIR}/software/src/*.h
+    ${CMAKE_SOURCE_DIR}/software/src/*.hpp
+)
 
 set(HEADERS 
     ${PUBLIC_HEADERS}
@@ -28,8 +34,14 @@ include_directories(
 )
 
 # Source files --------------------------------------------
-file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/software/src/*.c ${CMAKE_SOURCE_DIR}/software/src/*.cpp)
-file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/software/tests/*.c ${CMAKE_SOURCE_DIR}/software/tests/*.cpp)
+file(GLOB SOURCES
+    ${CMAKE_SOURCE_DIR}/software/src/*.c
+    ${CMAKE_SOURCE_DIR}/software/src/*.cpp
+)
+file(GLOB TEST_SOURCES
+    ${CMAKE_SOURCE_DIR}/software/tests/*.c
+    ${CMAKE_SOURCE_DIR}/software/tests/*.cpp
+)
 
 list(REMOVE_ITEM SOURCES ${CMAKE_SOURCE_DIR}/software/src/main.cpp)
 
