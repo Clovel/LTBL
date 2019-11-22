@@ -10,6 +10,22 @@ jobs:
         os: [ubuntu-latest, macOS-latest]
 
     steps:
+      - name: Installing dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          set -x
+          sudo apt-get update
+          sudo apt-get upgrade
+          sudo apt-get install doxygen
+
+      - name: Installing dependencies (macOS)
+        if: matrix.os == 'macOS-latest'
+        run: |
+          set -x
+          brew update
+          brew upgrade
+          brew install doxygen dot
+
       - name: Checkout
         uses: actions/checkout@v1
       
@@ -25,5 +41,5 @@ jobs:
         run: make
 
       - name: CTest execution
-        working-directory: build/tests
+        working-directory: build/software/
         run: ctest -VV
