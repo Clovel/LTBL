@@ -15,7 +15,6 @@ jobs:
         run: |
           set -x
           sudo apt-get update
-          sudo apt-get upgrade
           sudo apt-get install doxygen graphviz
 
       - name: Installing dependencies (macOS)
@@ -23,7 +22,6 @@ jobs:
         run: |
           set -x
           brew update
-          brew upgrade
           brew install doxygen graphviz
 
       - name: Checkout
@@ -41,5 +39,5 @@ jobs:
         run: make
 
       - name: CTest execution
-        working-directory: build/software/
+        working-directory: build/software/tests/
         run: ctest -VV
