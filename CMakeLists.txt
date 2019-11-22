@@ -96,17 +96,5 @@ set(BUILD_VERSION ${GIT_COMMIT_HASH} CACHE STRING "Build version" FORCE)
 # Main build
 # add_subdirectory(src) # TODO : Build main project w/ CMake
 
-# Builds dependent on main build
-if(ENABLE_TESTS)
-message(STATUS "TESTS enabled")
 add_subdirectory(software/tests)
-else()
-message(STATUS "TESTS disabled")
-endif(ENABLE_TESTS)
-
-if(ENABLE_DOCS)
-message(STATUS "DOCS enabled")
 add_subdirectory(software/docs)
-else()
-message(STATUS "DOCS disabled")
-endif (ENABLE_DOCS)
