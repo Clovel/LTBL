@@ -1,0 +1,29 @@
+name: Project tests
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      
+      - name: Create build directory
+        run: mkdir build
+      
+      - name: CMake generation
+        working-directory: build
+        run: cmake ..
+      
+      - name: Build tests
+        working-directory: build
+        run: make
+
+      - name: CTest execution
+        working-directory: build
+        run: ctest -VV
