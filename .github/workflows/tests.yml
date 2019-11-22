@@ -16,7 +16,7 @@ jobs:
           set -x
           sudo apt-get update
           sudo apt-get upgrade
-          sudo apt-get install doxygen
+          sudo apt-get install doxygen graphviz
 
       - name: Installing dependencies (macOS)
         if: matrix.os == 'macOS-latest'
@@ -24,7 +24,7 @@ jobs:
           set -x
           brew update
           brew upgrade
-          brew install doxygen dot
+          brew install doxygen graphviz
 
       - name: Checkout
         uses: actions/checkout@v1
