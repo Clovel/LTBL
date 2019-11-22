@@ -34,6 +34,8 @@ int main(const int argc, const char * const * const argv) {
 
     /* Executing test */
     switch (lTestNum) {
+        case -1:
+            std::cout << "[INFO ] Default test." << std::endl;
         case 0:
             lResult = test_Relay_isOn()
             break;
