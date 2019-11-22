@@ -6,6 +6,9 @@
 #include "tests_Relay.hpp"
 #include "Relay.hpp"
 
+#include <cassert>
+#include <cstdlib>
+
 /* Tests ----------------------------------------------- */
 int test_Relay_isOn(void) {
     /* Create normal relay */

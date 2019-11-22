@@ -8,9 +8,22 @@
 /* Includes -------------------------------------------- */
 #include "Relay.hpp"
 
+#ifndef TESTS
 #include <Arduino.h>
+#else /* TESTS */
+#include <iostream>
+
+extern void digitalWrite(int pPin, int pLevel);
+#endif /* TESTS */
 
 /* Defines --------------------------------------------- */
+#ifndef LOW
+#define LOW 0
+#endif /* LOW */
+
+#ifndef HIGH
+#define HIGH 1
+#endif /* HIGH */
 
 /* Variable declarations ------------------------------- */
 
@@ -31,7 +44,11 @@ namespace elec {
                 digitalWrite(mPin, HIGH);
                 break;
             default:
+#ifndef TESTS
                 Serial.println("[ERROR] Unknown Relay mode, cannot turn it off !");
+#else /* TESTS */
+                std::cout << "[ERROR] Unknown Relay mode, cannot turn it off !" << std::endl;
+#endif /* TESTS */
                 break;
         }
     }
@@ -50,7 +67,11 @@ namespace elec {
             case RELAY_MODE_INVERTED:
                 return !mState;
             default:
+#ifndef TESTS
                 Serial.println("[ERROR] Unknown relay mode, cannot know if it is on or off !");
+#else /* TESTS */
+                std::cout << "[ERROR] Unknown relay mode, cannot know if it is on or off !" << std::endl;
+#endif /* TESTS */
                 return false;
                 break;
         }
@@ -80,7 +101,11 @@ namespace elec {
                 digitalWrite(mPin, LOW);
                 break;
             default:
+#ifndef TESTS
                 Serial.println("[ERROR] Unknown Relay mode, cannot turn it on !");
+#else /* TESTS */
+                std::cout << "[ERROR] Unknown Relay mode, cannot turn it on !" << std::endl;
+#endif /* TESTS */
                 break;
         }
     }
@@ -97,7 +122,11 @@ namespace elec {
                 digitalWrite(mPin, HIGH);
                 break;
             default:
+#ifndef TESTS
                 Serial.println("[ERROR] Unknown Relay mode, cannot turn it off !");
+#else /* TESTS */
+                std::cout << "[ERROR] Unknown Relay mode, cannot turn it off !" << std::endl;
+#endif /* TESTS */
                 break;
         }
     }

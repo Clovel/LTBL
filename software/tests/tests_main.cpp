@@ -17,6 +17,12 @@ static void print_usage(const char * const pProgName) {
     std::cout << "[USAGE] " << pProgName << " <test#>" << std::endl;
 }
 
+/* Mock functions -------------------------------------- */
+void digitalWrite(int pPin, int pLevel) {
+    (void)pPin;
+    (void)pLevel;
+}
+
 /* Main ------------------------------------------------ */
 int main(const int argc, const char * const * const argv) {
     /* Test function initialization */
