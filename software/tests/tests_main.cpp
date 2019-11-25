@@ -19,8 +19,11 @@ static void print_usage(const char * const pProgName) {
 
 /* Mock functions -------------------------------------- */
 void digitalWrite(int pPin, int pLevel) {
-    (void)pPin;
-    (void)pLevel;
+    std::cout << "[TEST ] Writing " << pLevel << " to pin " << pPin << std::endl;
+}
+
+void pinMode(int pPin, int pMode) {
+    std::cout << "[TEST ] Setting pin " << pPin << " to mode " << pMode << std::endl;
 }
 
 /* Main ------------------------------------------------ */
