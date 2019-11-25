@@ -1,5 +1,4 @@
 /** 
- * Copyright Clovis Durand
  * Let There Be Light project
  * 
  * @file HttpRequest.cxx

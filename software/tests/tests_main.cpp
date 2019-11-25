@@ -1,5 +1,9 @@
 /**
+ * Let There Be Light project
+ * 
  * @brief Main testing file
+ * 
+ * @file tests_main.cpp
  */
 
 /* Includes -------------------------------------------- */

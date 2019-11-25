@@ -1,5 +1,9 @@
 /**
+ * Let There Be Light project
+ * 
  * @brief UTs for the Relay class
+ * 
+ * @file tests_Relay.cpp
  */
 
 /* Includes -------------------------------------------- */

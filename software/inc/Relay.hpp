@@ -1,6 +1,7 @@
 /** 
- * Copyright Clovis Durand
  * Let There Be Light project
+ * 
+ * @brief Relay class definition
  * 
  * @file Relay.hpp
  */
@@ -11,11 +12,11 @@
 
 namespace elec {
     /* Type definitions -------------------------------- */
-typedef enum _relayMode {
-    RELAY_MODE_UNKNOWN = 0,
-    RELAY_MODE_NORMAL,
-    RELAY_MODE_INVERTED
-} relayMode_t;
+    typedef enum _relayMode {
+        RELAY_MODE_UNKNOWN = 0,
+        RELAY_MODE_NORMAL,
+        RELAY_MODE_INVERTED
+    } relayMode_t;
 
     typedef int gpioPin_t;
     typedef int gpioLevel_t;

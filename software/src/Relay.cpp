@@ -1,6 +1,7 @@
 /** 
- * Copyright Clovis Durand
  * Let There Be Light project
+ * 
+ * @brief Relay class implementation
  * 
  * @file Relay.cpp
  */

@@ -1,5 +1,9 @@
 /**
+ * Let There Be Light project
+ * 
  * @brief Main source file. Contains the main routines.
+ * 
+ * @file main.cpp
  */
 
 /* Includes -------------------------------------------- */
@@ -29,10 +33,10 @@ void setup(void) {
 
 /* Main loop routine */
 void loop(void) {
-    static unsigned long int i    = 0U;
-    static bool lChangeRelayState = false;
-    static bool lOldRelayState    = gRelay->isOn();
-    static int lManualSwitchState = 0;
+    static unsigned long int i                  = 0U;
+    static bool              lChangeRelayState  = false;
+    static bool              lOldRelayState     = gRelay->isOn();
+    static int               lManualSwitchState = 0;
 
     /* Print the loop occurence we are currently executing */
     Serial.print("[DEBUG] Looping (");
