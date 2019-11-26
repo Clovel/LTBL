@@ -14,7 +14,7 @@
 #else /* TESTS */
 #include <iostream>
 
-extern void digitalRead(int pPin);
+extern int digitalRead(int pPin);
 extern void pinMode(int pPin, int pMode);
 #endif /* TESTS */
 
