@@ -26,6 +26,10 @@ void digitalWrite(int pPin, int pLevel) {
     std::cout << "[TEST ] Writing " << pLevel << " to pin " << pPin << std::endl;
 }
 
+int digitalRead(int pPin) {
+    std::cout << "[TEST ] Reading pin " << pPin << std::endl;
+}
+
 void pinMode(int pPin, int pMode) {
     std::cout << "[TEST ] Setting pin " << pPin << " to mode " << pMode << std::endl;
 }
