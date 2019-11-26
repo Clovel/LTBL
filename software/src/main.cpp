@@ -8,13 +8,15 @@
 
 /* Includes -------------------------------------------- */
 #include "Relay.hpp"
+#include "Switch.hpp"
 
 #include <Arduino.h>
 
 /* Defines --------------------------------------------- */
 
 /* Global variables ------------------------------------ */
-elec::Relay *gRelay = nullptr;
+elec::Relay *gRelay   = nullptr;
+elec::Switch *gSwitch = nullptr;
 
 /* On-boot routine */
 void setup(void) {
@@ -23,6 +25,9 @@ void setup(void) {
 
     /* Init relay */
     gRelay = new elec::Relay(D1, elec::RELAY_MODE_NORMAL);
+
+    /* Init Switch */
+    gSwitch = new elec::Switch(D2);
 
     /* Set up input for switch */
     pinMode(D2, INPUT_PULLUP);
@@ -44,7 +49,7 @@ void loop(void) {
     Serial.println(")...");
 
     /* Check manual switch state */
-    if(lOldRelayState != (lManualSwitchState = digitalRead(D2))) {
+    if(lOldRelayState != (lManualSwitchState = gSwitch->isActive())) {
         /* Save new state */
         lOldRelayState = lManualSwitchState;
 
@@ -60,6 +65,6 @@ void loop(void) {
         lChangeRelayState = false;
     }
 
-    /* Wait a little before turning the LED back off */
-    //delay(250);
+    /* Wait a little before looping back to avoid CPU overload */
+    delay(10);
 }
