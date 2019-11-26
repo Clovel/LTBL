@@ -7,6 +7,7 @@
  */
 
 /* Includes -------------------------------------------- */
+#include "elec.hpp"
 
 /* Defines --------------------------------------------- */
 
@@ -17,9 +18,6 @@ namespace elec {
         RELAY_MODE_NORMAL,
         RELAY_MODE_INVERTED
     } relayMode_t;
-
-    typedef int gpioPin_t;
-    typedef int gpioLevel_t;
 
     /* Class definition -------------------------------- */
     class Relay {
