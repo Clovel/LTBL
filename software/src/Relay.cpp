@@ -14,6 +14,7 @@
 #include <iostream>
 
 extern void digitalWrite(int pPin, int pLevel);
+extern void pinMode(int pPin, int pMode);
 #endif /* TESTS */
 
 /* Defines --------------------------------------------- */
@@ -25,6 +26,18 @@ extern void digitalWrite(int pPin, int pLevel);
 #define HIGH 1
 #endif /* HIGH */
 
+#ifndef INPUT
+#define INPUT 0x0
+#endif /* INPUT */
+
+#ifndef OUTPUT
+#define OUTPUT 0x1
+#endif /* OUTPUT */
+
+#ifndef INPUT_PULLUP
+#define INPUT_PULLUP 0x2
+#endif /* INPUT_PULLUP */
+
 /* Variable declarations ------------------------------- */
 
 /* Class implementation -------------------------------- */
@@ -34,6 +47,7 @@ namespace elec {
         mPin(pPin),
         mMode(pMode)
     {
+        pinMode(mPin, OUTPUT);
         switch(mMode) {
             case RELAY_MODE_NORMAL:
                 mState = LOW;
@@ -53,14 +67,12 @@ namespace elec {
         }
     }
 
-    Relay::~Relay()
-    {
+    Relay::~Relay() {
         /* Empty */
     }
 
     /* Getters */
-    bool Relay::isOn(void) const
-    {
+    bool Relay::isOn(void) const {
         switch(mMode) {
             case RELAY_MODE_NORMAL:
                 return mState;
@@ -77,20 +89,17 @@ namespace elec {
         }
     }
 
-    relayMode_t Relay::mode(void) const
-    {
+    relayMode_t Relay::mode(void) const {
         return mMode;
     }
 
     /* Setters */
-    void Relay::setMode(const relayMode_t &pMode)
-    {
+    void Relay::setMode(const relayMode_t &pMode) {
         mMode = pMode;
     }
 
     /* Actions */
-    void Relay::turnOn(void)
-    {
+    void Relay::turnOn(void) {
         switch(mMode) {
             case RELAY_MODE_NORMAL:
                 mState = HIGH;
@@ -110,8 +119,7 @@ namespace elec {
         }
     }
 
-    void Relay::turnOff(void)
-    {
+    void Relay::turnOff(void) {
         switch(mMode) {
             case RELAY_MODE_NORMAL:
                 mState = LOW;
@@ -131,11 +139,11 @@ namespace elec {
         }
     }
 
-    void Relay::switchState(void)
-    {
+    void Relay::switchState(void) {
         /* We don't realy care for the Relay mode here, 
          * We just change the state
          */
         mState = !mState;
+        digitalWrite(mPin, mState);
     }
 }
