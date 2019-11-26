@@ -48,7 +48,7 @@ namespace elec {
         pinMode(mPin, INPUT_PULLUP);
     }
 
-    Switch~Switch() {
+    Switch::~Switch() {
         /* Empty */
     }
 
