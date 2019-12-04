@@ -57,3 +57,4 @@ namespace elec {
         return digitalRead(mPin);
     }
 }
+
