@@ -28,6 +28,8 @@ void digitalWrite(int pPin, int pLevel) {
 
 int digitalRead(int pPin) {
     std::cout << "[TEST ] Reading pin " << pPin << std::endl;
+
+    return 0; /* Just to avoid a warning */
 }
 
 void pinMode(int pPin, int pMode) {
