@@ -13,24 +13,25 @@
 #include <Arduino.h>
 
 /* Defines --------------------------------------------- */
+#define LOG_BAUDRATE 9600
+
+#define LED_DIO    D1
+#define SWITCH_DIO D2
 
 /* Global variables ------------------------------------ */
-elec::Relay *gRelay   = nullptr;
+elec::Relay  *gRelay  = nullptr;
 elec::Switch *gSwitch = nullptr;
 
 /* On-boot routine */
 void setup(void) {
     /* Set up the serial port for printing logs */
-    Serial.begin(9600);
+    Serial.begin(LOG_BAUDRATE);
 
     /* Init relay */
-    gRelay = new elec::Relay(D1, elec::RELAY_MODE_NORMAL);
+    gRelay = new elec::Relay(LED_DIO, elec::RELAY_MODE_NORMAL);
 
     /* Init Switch */
-    gSwitch = new elec::Switch(D2);
-
-    /* Set up input for switch */
-    pinMode(D2, INPUT_PULLUP);
+    gSwitch = new elec::Switch(SWITCH_DIO);
 
     /* End of setup */
     Serial.println("[BOOT ] System booted !");
