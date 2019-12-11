@@ -4,6 +4,7 @@ build*/
 Testing*/
 image_*/
 output/
+libdeps/
 
 # CMake related files ---------------------------
 Makefile
