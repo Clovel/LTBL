@@ -39,15 +39,9 @@ void setup(void) {
 
 /* Main loop routine */
 void loop(void) {
-    static unsigned long int i                  = 0U;
     static bool              lChangeRelayState  = false;
     static bool              lOldRelayState     = gRelay->isOn();
     static int               lManualSwitchState = 0;
-
-    /* Print the loop occurence we are currently executing */
-    Serial.print("[DEBUG] Looping (");
-    Serial.print(i++);
-    Serial.println(")...");
 
     /* Check manual switch state */
     if(lOldRelayState != (lManualSwitchState = gSwitch->isActive())) {
@@ -60,6 +54,13 @@ void loop(void) {
 
     /* Switch the LED's state */
     if(lChangeRelayState) {
+        Serial.print("[DEBUG] Switching LED state : ");
+        if(0 == lManualSwitchState) 
+            Serial.println("OFF");
+        else
+            Serial.println("ON");
+        
+        /* Switch Relay state */
         gRelay->switchState();
 
         /* Set the relay to not be switched */
@@ -67,6 +68,5 @@ void loop(void) {
     }
 
     /* Wait a little before looping back to avoid CPU overload */
-    delay(10);
+    delay(10U);
 }
-

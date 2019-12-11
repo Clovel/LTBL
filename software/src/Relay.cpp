@@ -146,5 +146,8 @@ namespace elec {
          */
         mState = !mState;
         digitalWrite(mPin, mState);
+
+        Serial.print("[DEBUG] <Relay::switchState> Switching to ");
+        Serial.println(mState);
     }
 }
