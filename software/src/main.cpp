@@ -12,15 +12,24 @@
 
 #include <Arduino.h>
 
+#include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library
+#include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
+#include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+
 /* Defines --------------------------------------------- */
 #define LOG_BAUDRATE 9600
 
 #define LED_DIO    D1
 #define SWITCH_DIO D2
 
+#define AP_NAME   "LTBL"
+#define AP_PASSWD "TOTO"
+
 /* Global variables ------------------------------------ */
-elec::Relay  *gRelay  = nullptr;
-elec::Switch *gSwitch = nullptr;
+elec::Relay  *gRelay   = nullptr;
+elec::Switch *gSwitch  = nullptr;
+WiFiManager  *gWiFiMgr = nullptr;
 
 /* On-boot routine */
 void setup(void) {
@@ -32,6 +41,16 @@ void setup(void) {
 
     /* Init Switch */
     gSwitch = new elec::Switch(SWITCH_DIO);
+
+    /* Init WiFi manager */
+    gWiFiMgr = new WiFiManager;
+    if(!gWiFiMgr->autoConnect(AP_NAME, AP_PASSWD)) {
+        Serial.println("[ERROR] Failed to connect to WiFi !");
+        ESP.reset();
+        delay(1000U);
+    }
+    Serial.print("[BOOT ] IPv4 Address : ");
+    Serial.println(WiFi.localIP());
 
     /* End of setup */
     Serial.println("[BOOT ] System booted !");
