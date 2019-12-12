@@ -12,10 +12,12 @@
 
 #include <Arduino.h>
 
-#include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library
-#include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
-#include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+#include <FS.h>     /* FileSystem header */
+
+#include <ESP8266WiFi.h>          /* ESP8266 Core WiFi Library */
+#include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal */
+#include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal */
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic */
 
 /* Defines --------------------------------------------- */
 #define LOG_BAUDRATE 9600
@@ -31,7 +33,25 @@ elec::Relay  *gRelay   = nullptr;
 elec::Switch *gSwitch  = nullptr;
 WiFiManager  *gWiFiMgr = nullptr;
 
-/* On-boot routine */
+bool shouldSaveConfig = false; /* Config save flag */
+
+/* WiFiManager callbacks ------------------------------- */
+void configModeCallback (WiFiManager *myWiFiManager) {
+    Serial.println("[BOOT ] <WiFiManager> Entered config mode");
+    Serial.println(WiFi.softAPIP());
+
+    /* Print SSID */
+    Serial.print("[BOOT ] <WiFiManager> SSID : ");
+    Serial.println(myWiFiManager->getConfigPortalSSID());
+}
+
+/* Callback notifying us of the need to save config */
+void saveConfigCallback (void) {
+    Serial.println("Should save config");
+    shouldSaveConfig = true;
+}
+
+/* On-boot routine ------------------------------------- */
 void setup(void) {
     /* Set up the serial port for printing logs */
     Serial.begin(LOG_BAUDRATE);
@@ -44,11 +64,24 @@ void setup(void) {
 
     /* Init WiFi manager */
     gWiFiMgr = new WiFiManager;
+
+    /** Set callback that gets called when connecting 
+     * to previous WiFi fails, 
+     * and enters Access Point mode */
+    gWiFiMgr->setAPCallback(configModeCallback);
+
+    /** Fetches SSID and password and tries to connect
+     * if it does not connect it starts an access point with the specified name
+     * (defined here by AP_PASSWD)
+     * and goes into a blocking loop awaiting configuration
+     */
     if(!gWiFiMgr->autoConnect(AP_NAME, AP_PASSWD)) {
         Serial.println("[ERROR] Failed to connect to WiFi !");
         ESP.reset();
         delay(1000U);
     }
+    Serial.print("[BOOT ] Successfully connected to ");
+    Serial.println(WiFi.SSID());
     Serial.print("[BOOT ] IPv4 Address : ");
     Serial.println(WiFi.localIP());
 
@@ -56,7 +89,7 @@ void setup(void) {
     Serial.println("[BOOT ] System booted !");
 }
 
-/* Main loop routine */
+/* Main loop routine ----------------------------------- */
 void loop(void) {
     static bool              lChangeRelayState  = false;
     static bool              lOldRelayState     = gRelay->isOn();
