@@ -33,6 +33,7 @@ elec::Switch *gSwitch  = nullptr;
 WiFiManager  *gWiFiMgr = nullptr;
 WiFiServer   *gServer  = nullptr;
 
+/* Static variables ------------------------------------ */
 static std::string sRequest;
 
 /* On-boot routine */
