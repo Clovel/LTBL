@@ -29,7 +29,9 @@
 /* Global variables ------------------------------------ */
 elec::Relay  *gRelay   = nullptr;
 elec::Switch *gSwitch  = nullptr;
+
 WiFiManager  *gWiFiMgr = nullptr;
+WiFiServer   *gServer  = nullptr;
 
 /* On-boot routine */
 void setup(void) {
@@ -51,6 +53,10 @@ void setup(void) {
     }
     Serial.print("[BOOT ] IPv4 Address : ");
     Serial.println(WiFi.localIP());
+
+    /* Set up web server */
+    gServer = new WiFiServer(80U);
+    gServer->begin();
 
     /* End of setup */
     Serial.println("[BOOT ] System booted !");
