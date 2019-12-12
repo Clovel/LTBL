@@ -5,11 +5,10 @@
  */
 
 /* Includes -------------------------------------------- */
-#include "remoteRequest.hxx"
+#include "Relay.hpp"
 
-#include "Relay.hxx"
-
-#include "HttpRequest.hxx"
+#include "webtools.hpp"
+#include "HttpRequest.hpp"
 
 /* C++ System */
 #include <iostream>
