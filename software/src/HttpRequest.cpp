@@ -7,9 +7,10 @@
 /* Includes -------------------------------------------- */
 #include "HttpRequest.hpp"
 
+#include <Arduino.h>
+
 #include <string>
 #include <vector>
-#include <iostream>
 #include <sstream>
 
 /* Defines --------------------------------------------- */
@@ -49,7 +50,7 @@ int HttpRequest::parseRequest(const std::string &pRequestStr) {
     std::vector<std::string> lLines;
 
     if(pRequestStr.empty()) {
-        std::cerr << "[ERROR] <parseRequest> Request is empty, nothing to parse !" << std::endl;
+        Serial.println("[ERROR] <parseRequest> Request is empty, nothing to parse !");
         return -1;
     }
 
@@ -64,7 +65,10 @@ int HttpRequest::parseRequest(const std::string &pRequestStr) {
             break;
         }
 
-        //std::cout << "[DEBUG] <HttpRequest::parseRequest> line n°" << lLines.size() + 1U << " = " << lLine << std::endl;
+        // Serial.print("[DEBUG] <HttpRequest::parseRequest> line n°");
+        // Serial.print(lLines.size() + 1U);
+        // Serial.print(" = ");
+        // Serial.println(lLine.c_str());
 
         lLines.push_back(lLine);
     }
