@@ -175,11 +175,7 @@ void cat(const WiFiClient * const pClient, FILE * const pResource) {
 
     /* Send the contents of the file into the socket */
     while (!feof(pResource)) {
-        errno = 0;
-        send(pClient, lBuf, strlen(lBuf), 0);
-        if(errno) {
-            std::cerr << "[ERROR] <cat> send failed : errno = " << errno << ", " << strerror(errno) << std::endl;
-        }
+        htmlSend(pClient, lBuf);
         fgets(lBuf, sizeof(lBuf), pResource);
     }
 }
