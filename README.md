@@ -1,6 +1,6 @@
 # Let There Be Light !
 
-Connected lamp project
+This project aims to create a web-connected lamp controled by both a physical switch and a web page.
 
 # Ressources & Links
 
