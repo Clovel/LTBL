@@ -8,6 +8,9 @@
 
 /* Defines --------------------------------------------- */
 
+/* Forward declarations -------------------------------- */
+class WiFiClient;
+
 /* Type definitions ------------------------------------ */
 typedef enum _restMethods {
     REST_UNKNOWN = 0,
@@ -24,4 +27,4 @@ typedef enum _restMethods {
 /* Variable declarations ------------------------------- */
 
 /* Functions ------------------------------------------- */
-int acceptRequest(const int pSocket, int * const pResult);
+int acceptRequest(WiFiClient * const pClient);

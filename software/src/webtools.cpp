@@ -10,63 +10,50 @@
 #include "webtools.hpp"
 #include "HttpRequest.hpp"
 
-/* C++ System */
-#include <iostream>
-
-/* C System */
-#include <sys/socket.h>
-
-#include <stdio.h>
-
-#include <unistd.h>
-#include <stdlib.h>
-
-#include <ctype.h>
-
-#include <errno.h> /* For errno */
-#include <cstring> /* For strerror */
+/* ESP includes */
+#include <ESP8266WiFi.h>
 
 /* Defines --------------------------------------------- */
 #define IS_SPACE(x) isspace((int)(x))
 
 /* Variable declarations ------------------------------- */
-extern elec::Relay sRelay;
+extern elec::Relay *gRelay;
 
 /* Forward declaration of private functions ------------ */
-int htmlSend(const WiFiClient * const pClient, const char * const pStr);
-int htmlSend(const WiFiClient * const pClient, const std::string pStr);
+int htmlSend(WiFiClient * const pClient, const char * const pStr);
+int htmlSend(WiFiClient * const pClient, const std::string pStr);
 
 int getLine(int pSock, char *pBuf, int pSize);
-void cat(const WiFiClient * const pClient, FILE * const pResource);
-void serveFile(const WiFiClient * const pClient, const char * const pFileName);
+#if 0
+void cat(WiFiClient * const pClient, FILE * const pResource);
+void serveFile(WiFiClient * const pClient, const char * const pFileName);
+#endif /* 0 */
 void errorDie(const char * const sc);
 
-void unimplemented(const WiFiClient * const pClient);
-void badRequest(const WiFiClient * const pClient);
-void cannotExecute(const WiFiClient * const pClient);
-void headers(const WiFiClient * const pClient, const char * const pFileName);
-void notFound(const WiFiClient * const pClient);
-void home(const WiFiClient * const pClient);
-void togglePage(const WiFiClient * const pClient);
+void unimplemented(WiFiClient * const pClient);
+void badRequest(WiFiClient * const pClient);
+void cannotExecute(WiFiClient * const pClient);
+void headers(WiFiClient * const pClient, const char * const pFileName);
+void notFound(WiFiClient * const pClient);
+void home(WiFiClient * const pClient);
+void togglePage(WiFiClient * const pClient);
 
 /* Functions ------------------------------------------- */
-int htmlSend(const WiFiClient * const pClient, const char * const pStr) {
-    int lResult = 0;
-    
-    lResult = pClient->write(pStr, strlen(pStr));
+int htmlSend(WiFiClient * const pClient, const char * const pStr) {
+    int lResult = pClient->write(pStr, strlen(pStr));
     if(0 > lResult) {
-        std::cerr << "[ERROR] <htmlSend> send failed with error code " << lResult << std::endl;
+        Serial.print("[ERROR] <htmlSend> write failed with error code ");
+        Serial.println(lResult);
     }
 
     return lResult;
 }
 
-int htmlSend(const WiFiClient * const pClient, const std::string pStr) {
-    int lResult = 0;
-    
-    lResult = pClient->write(pStr.c_str(), pStr.length());
+int htmlSend(WiFiClient * const pClient, const std::string pStr) {
+    int lResult = pClient->write(pStr.c_str(), pStr.length());
     if(0 > lResult) {
-        std::cerr << "[ERROR] <htmlSend> send failed with error code " << lResult << std::endl;
+        Serial.print("[ERROR] <htmlSend> write failed with error code ");
+        Serial.println(lResult);
     }
 
     return lResult;
@@ -85,7 +72,7 @@ int htmlSend(const WiFiClient * const pClient, const std::string pStr) {
  *             the size of the buffer
  * Returns: the number of bytes stored (excluding null) */
 /**********************************************************************/
-int getLine(const WiFiClient * const pClient, char *pBuf, int pSize)
+int getLine(WiFiClient * const pClient, char *pBuf, int pSize)
 {
     /* Variable declarations */
     char lChar = '\0';
@@ -95,6 +82,11 @@ int getLine(const WiFiClient * const pClient, char *pBuf, int pSize)
 
     /* Loop over the line */
     do {
+
+        /* Check if there are bytes available */
+        if(!pClient->available())
+            break;
+        
         /* Read a character */
         lChar = pClient->read();
 
@@ -166,7 +158,8 @@ int getLine(const WiFiClient * const pClient, char *pBuf, int pSize)
  * Parameters: the client socket descriptor
  *             FILE pointer for the file to cat */
 /**********************************************************************/
-void cat(const WiFiClient * const pClient, FILE * const pResource) {
+#if 0
+void cat(WiFiClient * const pClient, FILE * const pResource) {
     char lBuf[1024U];
     memset(lBuf, 0, 1024U);
 
@@ -179,6 +172,7 @@ void cat(const WiFiClient * const pClient, FILE * const pResource) {
         fgets(lBuf, sizeof(lBuf), pResource);
     }
 }
+#endif /* 0 */
 
 /**********************************************************************/
 /* Send a regular file to the client.  Use headers, and report
@@ -187,7 +181,8 @@ void cat(const WiFiClient * const pClient, FILE * const pResource) {
  *              file descriptor
  *             the name of the file to serve */
 /**********************************************************************/
-void serveFile(const WiFiClient * const pClient, const char * const pFileName) {
+#if 0
+void serveFile(WiFiClient * const pClient, const char * const pFileName) {
     FILE         *lResource   = nullptr;
     unsigned int  lNumChars   = 1;
     char          lBuf[1024U];
@@ -210,6 +205,7 @@ void serveFile(const WiFiClient * const pClient, const char * const pFileName) {
 
     fclose(lResource);
 }
+#endif /* 0 */
 
 /**********************************************************************/
 /* Print out an error message with perror() (for system errors; based
@@ -227,7 +223,7 @@ void error_die(const char * const sc)
  * implemented.
  * Parameter: the client socket */
 /**********************************************************************/
-void unimplemented(const WiFiClient * const pClient)
+void unimplemented(WiFiClient * const pClient)
 {
     std::string lUnimplemented = "HTTP/1.0 501 Method Not Implemented\r\n"
     "Content-Type: text/html\r\n"
@@ -243,7 +239,8 @@ void unimplemented(const WiFiClient * const pClient)
     
     const int lResult = htmlSend(pClient, lUnimplemented);
     if(0 > lResult) {
-        std::cerr << "[ERROR] <unimplemented> htmlSend failed with return code " << lResult << std::endl;
+        Serial.print("[ERROR] <unimplemented> htmlSend failed with return code ");
+        Serial.println(lResult);
     }
 }
 
@@ -251,7 +248,7 @@ void unimplemented(const WiFiClient * const pClient)
 /* Inform the client that a request it has made has a problem.
  * Parameters: client socket */
 /**********************************************************************/
-void badRequest(const WiFiClient * const pClient)
+void badRequest(WiFiClient * const pClient)
 {
     std::string lBadReq = "HTTP/1.0 400 BAD REQUEST\r\n"
     "Content-Type: text/html\r\n"
@@ -268,7 +265,8 @@ void badRequest(const WiFiClient * const pClient)
 
     const int lResult = htmlSend(pClient, lBadReq);
     if(0 > lResult) {
-        std::cerr << "[ERROR] <badRequest> htmlSend failed with return code " << lResult << std::endl;
+        Serial.print("[ERROR] <badRequest> htmlSend failed with return code ");
+        Serial.println(lResult);
     }
 }
 
@@ -276,7 +274,7 @@ void badRequest(const WiFiClient * const pClient)
 /* Inform the client that a CGI script could not be executed.
  * Parameter: the client socket descriptor. */
 /**********************************************************************/
-void cannotExecute(const WiFiClient * const pClient)
+void cannotExecute(WiFiClient * const pClient)
 {
     std::string lExeError = "HTTP/1.0 500 Internal Server Error\r\n"
     "Content-Type: text/html\r\n"
@@ -292,7 +290,8 @@ void cannotExecute(const WiFiClient * const pClient)
 
     const int lResult = htmlSend(pClient, lExeError);
     if(0 > lResult) {
-        std::cerr << "[ERROR] <cannotExecute> htmlSend failed with return code " << lResult << std::endl;
+        Serial.print("[ERROR] <cannotExecute> htmlSend failed with return code ");
+        Serial.println(lResult);
     }
 }
 
@@ -301,7 +300,7 @@ void cannotExecute(const WiFiClient * const pClient)
 /* Parameters: the socket to print the headers on
  *             the name of the file */
 /**********************************************************************/
-void headers(const WiFiClient * const pClient, const char * const pFileName)
+void headers(WiFiClient * const pClient, const char * const pFileName)
 {
     std::string lHeader = "HTTP/1.0 200 Ok\r\n"
     "Content-Type: text/html\r\n"
@@ -309,14 +308,15 @@ void headers(const WiFiClient * const pClient, const char * const pFileName)
 
     const int lResult = htmlSend(pClient, lHeader);
     if(0 > lResult) {
-        std::cerr << "[ERROR] <headers> htmlSend failed with return code " << lResult << std::endl;
+        Serial.print("[ERROR] <headers> htmlSend failed with return code ");
+        Serial.println(lResult);
     }
 }
 
 /**********************************************************************/
 /* Give a client a 404 not found status message. */
 /**********************************************************************/
-void notFound(const WiFiClient * const pClient)
+void notFound(WiFiClient * const pClient)
 {
     std::string l404 = "HTTP/1.0 404 NOT FOUND\r\n"
     "Content-Type: text/html\r\n"
@@ -335,14 +335,15 @@ void notFound(const WiFiClient * const pClient)
 
     const int lResult = htmlSend(pClient, l404);
     if(0 > lResult) {
-        std::cerr << "[ERROR] <notFound> htmlSend failed with return code " << lResult << std::endl;
+        Serial.print("[ERROR] <notFound> htmlSend failed with return code ");
+        Serial.println(lResult);
     }
 }
 
 /**********************************************************************/
 /* Give a client a "found" status message. */
 /**********************************************************************/
-void home(const WiFiClient * const pClient) {
+void home(WiFiClient * const pClient) {
     std::string lHome = "HTTP/1.0 200 Ok\r\n"
     "Content-Type: text/html\r\n"
     "\r\n"
@@ -358,11 +359,12 @@ void home(const WiFiClient * const pClient) {
 
     const int lResult = htmlSend(pClient, lHome);
     if(0 > lResult) {
-        std::cerr << "[ERROR] <home> htmlSend failed with return code " << lResult << std::endl;
+        Serial.print("[ERROR] <home> htmlSend failed with return code ");
+        Serial.println(lResult);
     }
 }
 
-void togglePage(const WiFiClient * const pClient) {
+void togglePage(WiFiClient * const pClient) {
     std::string lTogglePage = "HTTP/1.0 200 Ok\r\n"
     "Content-Type: text/html\r\n"
     "\r\n"
@@ -376,20 +378,22 @@ void togglePage(const WiFiClient * const pClient) {
     "\r\n"
     "    <body>\r\n"
     "        <h2>Toggle Switch</h2>\r\n"
-    "        <h3>Switch is currently at value : " + std::string((sRelay.isOn() ? "ON" : "OFF")) + "<h3>\r\n"
+    "        <h3>Switch is currently at value : " + std::string((gRelay->isOn() ? "ON" : "OFF")) + "<h3>\r\n"
     "        <form action=\"/toggle\" method=\"get\">\r\n"
     "            <input type=\"submit\" name=\"Toggle Lamp\" value=\"Toggle Lamp\" />\r\n"
     "        </form>\r\n"
     "    </body>\r\n"
     "</html>\r\n\r\n";
 
-    std::cout << "[DEBUG] Sending the toggle page code !" << std::endl;
+    Serial.println("[DEBUG] Sending the toggle page code !");
 
     const int lResult = htmlSend(pClient, lTogglePage);
     if(0 > lResult) {
-        std::cerr << "[ERROR] <togglePage> htmlSend failed with return code " << lResult << std::endl;
+        Serial.print("[ERROR] <togglePage> htmlSend failed with return code ");
+        Serial.println(lResult);
     } else {
-        //std::cout << "[DEBUG] Toggle page code sent :" << std::endl << std::endl << lTogglePage << std::endl;
+        // Serial.println("[DEBUG] <togglePage> Toggle page code sent : ");
+        // Serial.println(lTogglePage.c_str());
     }
 }
 
@@ -398,9 +402,9 @@ void togglePage(const WiFiClient * const pClient) {
  * return.  Process the request appropriately.
  * Parameters: the socket connected to the client */
 /**********************************************************************/
-int acceptRequest(const WiFiClient * const pClient, int * const pResult) {
-    if(nullptr == pResult) {
-        std::cerr << "[ERROR] Result is a nullptr !" << std::endl;
+int acceptRequest(WiFiClient * const pClient) {
+    if(nullptr == pClient) {
+        Serial.println("[ERROR] Client is a nullptr !");
         return -1;
     }
 
@@ -422,14 +426,18 @@ int acceptRequest(const WiFiClient * const pClient, int * const pResult) {
         //std::cout << "[DEBUG] <acceptRequest> Got \"" << std::string(lBuf) << "\" from the client. " << std::endl;
 
         if(0 > lNumChars) {
-            std::cerr << "[ERROR] <acceptRequest> getLine failed, returned " << lNumChars << std::endl;
+            Serial.print("[ERROR] <acceptRequest> getLine failed, returned ");
+            Serial.println(lNumChars);
+            pClient->stop();
             return -1;
         } else if(0 == lNumChars) {
-            std::cout << "[WARN ] <acceptRequest> Read 0 characters !" << std::endl;
+            Serial.println("[WARN ] <acceptRequest> Read 0 characters !");
         } else if(std::string(lBuf).empty()) {
-            std::cout << "[WARN ] <acceptRequest> Got an empty line !" << std::endl;
+            Serial.println("[WARN ] <acceptRequest> Got an empty line !");
             if(lNumChars) {
-                std::cerr << "[ERROR] <acceptRequest> Got an empty line, but lNumChars = " << lNumChars << std::endl;
+                Serial.print("[ERROR] <acceptRequest> Got an empty line, but lNumChars = ");
+                Serial.println(lNumChars);
+                pClient->stop();
                 return -1;
             }
         }
@@ -439,29 +447,35 @@ int acceptRequest(const WiFiClient * const pClient, int * const pResult) {
     } while(0 < lNumChars);
     
     /* Print out what we received */
-    //std::cout << "[DEBUG] <acceptRequest> lRequestStr = \"" << lRequestStr << "\"" << std::endl;
+    Serial.print("[DEBUG] <acceptRequest> lRequestStr = \"");
+    Serial.print(lRequestStr.c_str());
+    Serial.println("\"");
     if(lRequestStr.empty()) {
-        std::cout << "[WARN ] Go an empty request, exiting..." << std::endl;
-        close(pClient);
+        Serial.println("[WARN ] Got an empty request, exiting...");
+        pClient->stop();
         return -1;
     }
     lRequest.parseRequest(lRequestStr);
 
     /* Get the method from the client's request */
     std::string lMethod = lRequest.method();
-    std::cout << "[DEBUG] <acceptRequest> The method is " << lMethod << std::endl;
+    Serial.print("[DEBUG] <acceptRequest> The method is ");
+    Serial.println(lMethod.c_str());
 
     /* Get the URL of the request from the client's request */
-    std::cout << "[DEBUG] <acceptRequest> The complete URL is : " << lRequest.URL() << std::endl;
-    std::cout << "[DEBUG] <acceptRequest> The short URL is    : " << lRequest.shortURL() << std::endl;
+    Serial.print("[DEBUG] <acceptRequest> The method is ");
+    Serial.println(lRequest.URL().c_str());
+    Serial.print("[DEBUG] <acceptRequest> The short URL is    : ");
+    Serial.println(lRequest.shortURL().c_str());
     std::string lURL = lRequest.shortURL();
 
     /* The real query is located after the "?" symbol */
     std::string lQuery = lRequest.query();
     if(lQuery.empty()) {
-        std::cout << "[DEBUG] <acceptRequest> No query found. " << std::endl;
+        Serial.println("[DEBUG] <acceptRequest> No query found.");
     } else {
-        std::cout << "[DEBUG] <acceptRequest> The query is " << lQuery << std::endl;
+        Serial.print("[DEBUG] <acceptRequest> The query is ");
+        Serial.println(lQuery.c_str());
     }
 
     /* What method is it ? */
@@ -482,33 +496,33 @@ int acceptRequest(const WiFiClient * const pClient, int * const pResult) {
         lREST = REST_OPTIONS;
     } else {
         unimplemented(pClient);
-        std::cout << "[ERROR] <acceptRequest> Unknown REST method requested ! " << std::endl;
-        close(pClient);
+        Serial.println("[ERROR] <acceptRequest> Unknown REST method requested ! ");
+        pClient->stop();
         return -1;
     }
 
     switch(lREST) {
         case REST_GET:
-            std::cout << "[DEBUG] <acceptRequest> Request is GET" << std::endl;
+            Serial.println("[DEBUG] <acceptRequest> Request is GET");
 
             /* What is the URL ? */
             if("/" == lURL || "/index.html" == lURL) {
                 /* Home page */
             } else if ("/toggle" == lURL) {
                 /* Switch the relays state */
-                sRelay.switchState();
+                gRelay->switchState();
 
                 /* Check the relay's state, print it out */
-                if(sRelay.isOn()) {
-                    std::cout << "[DEBUG] <acceptRequest> Toggled relay, is now ON" << std::endl;
+                if(gRelay->isOn()) {
+                    Serial.println("[DEBUG] <acceptRequest> Toggled relay, is now ON");
                 } else {
-                    std::cout << "[DEBUG] <acceptRequest> Toggled relay, is now OFF" << std::endl;
+                    Serial.println("[DEBUG] <acceptRequest> Toggled relay, is now OFF");
                 }
             } else {
                 /* Unimplemented */
                 notFound(pClient);
-                std::cout << "[ERROR] Unknown URL requested !" << std::endl;
-                close(pClient);
+                Serial.println("[ERROR] Unknown URL requested !");
+                pClient->stop();
                 return -1;
             }
 
@@ -516,31 +530,31 @@ int acceptRequest(const WiFiClient * const pClient, int * const pResult) {
             togglePage(pClient);
             break;
         case REST_POST:
-            std::cout << "[DEBUG] <acceptRequest> Request is POST" << std::endl;
+            Serial.println("[DEBUG] <acceptRequest> Request is POST");
             unimplemented(pClient);
-            close(pClient);
+            pClient->stop();
             return -1;
             break;
         case REST_INDEX:
-            std::cout << "[DEBUG] <acceptRequest> Request is INDEX" << std::endl;
+            Serial.println("[DEBUG] <acceptRequest> Request is INDEX");
             home(pClient);
             break;
         case REST_PUT:
-            std::cout << "[DEBUG] <acceptRequest> Request is PUT" << std::endl;
+            Serial.println("[DEBUG] <acceptRequest> Request is PUT");
             unimplemented(pClient);
-            close(pClient);
+            pClient->stop();
             return -1;
         case REST_UNKNOWN:
         default:
-            std::cout << "[ERROR] <acceptRequest> Request is unknown" << std::endl;
+            Serial.println("[ERROR] <acceptRequest> Request is unknown");
             unimplemented(pClient);
-            close(pClient);
+            pClient->stop();
             return -1;
     }
 
     /* Close the client */
-    usleep(10000);
-    close(pClient);
+    delay(10U);
+    pClient->stop();
 
     return 0;
 }
