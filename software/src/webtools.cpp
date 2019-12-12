@@ -33,21 +33,21 @@
 extern elec::Relay sRelay;
 
 /* Forward declaration of private functions ------------ */
-int htmlSend(const int pClient, const char * const pStr);
-int htmlSend(const int pClient, const std::string pStr);
+int htmlSend(const WiFiClient * const pClient, const char * const pStr);
+int htmlSend(const WiFiClient * const pClient, const std::string pStr);
 
 int getLine(int pSock, char *pBuf, int pSize);
-void cat(const int pClient, FILE * const pResource);
-void serveFile(const int pClient, const char * const pFileName);
+void cat(const WiFiClient * const pClient, FILE * const pResource);
+void serveFile(const WiFiClient * const pClient, const char * const pFileName);
 void errorDie(const char * const sc);
 
-void unimplemented(const int pClient);
-void badRequest(const int pClient);
-void cannotExecute(const int pClient);
-void headers(const int pClient, const char * const pFileName);
-void notFound(const int pClient);
-void home(const int pClient);
-void togglePage(const int pClient);
+void unimplemented(const WiFiClient * const pClient);
+void badRequest(const WiFiClient * const pClient);
+void cannotExecute(const WiFiClient * const pClient);
+void headers(const WiFiClient * const pClient, const char * const pFileName);
+void notFound(const WiFiClient * const pClient);
+void home(const WiFiClient * const pClient);
+void togglePage(const WiFiClient * const pClient);
 
 /* Functions ------------------------------------------- */
 int htmlSend(const WiFiClient * const pClient, const char * const pStr) {
@@ -166,7 +166,7 @@ int getLine(const WiFiClient * const pClient, char *pBuf, int pSize)
  * Parameters: the client socket descriptor
  *             FILE pointer for the file to cat */
 /**********************************************************************/
-void cat(const int pClient, FILE * const pResource) {
+void cat(const WiFiClient * const pClient, FILE * const pResource) {
     char lBuf[1024U];
     memset(lBuf, 0, 1024U);
 
@@ -191,7 +191,7 @@ void cat(const int pClient, FILE * const pResource) {
  *              file descriptor
  *             the name of the file to serve */
 /**********************************************************************/
-void serveFile(const int pClient, const char * const pFileName) {
+void serveFile(const WiFiClient * const pClient, const char * const pFileName) {
     FILE         *lResource   = nullptr;
     unsigned int  lNumChars   = 1;
     char          lBuf[1024U];
@@ -231,7 +231,7 @@ void error_die(const char * const sc)
  * implemented.
  * Parameter: the client socket */
 /**********************************************************************/
-void unimplemented(const int pClient)
+void unimplemented(const WiFiClient * const pClient)
 {
     std::string lUnimplemented = "HTTP/1.0 501 Method Not Implemented\r\n"
     "Content-Type: text/html\r\n"
@@ -255,7 +255,7 @@ void unimplemented(const int pClient)
 /* Inform the client that a request it has made has a problem.
  * Parameters: client socket */
 /**********************************************************************/
-void badRequest(const int pClient)
+void badRequest(const WiFiClient * const pClient)
 {
     std::string lBadReq = "HTTP/1.0 400 BAD REQUEST\r\n"
     "Content-Type: text/html\r\n"
@@ -280,7 +280,7 @@ void badRequest(const int pClient)
 /* Inform the client that a CGI script could not be executed.
  * Parameter: the client socket descriptor. */
 /**********************************************************************/
-void cannotExecute(const int pClient)
+void cannotExecute(const WiFiClient * const pClient)
 {
     std::string lExeError = "HTTP/1.0 500 Internal Server Error\r\n"
     "Content-Type: text/html\r\n"
@@ -305,7 +305,7 @@ void cannotExecute(const int pClient)
 /* Parameters: the socket to print the headers on
  *             the name of the file */
 /**********************************************************************/
-void headers(const int pClient, const char * const pFileName)
+void headers(const WiFiClient * const pClient, const char * const pFileName)
 {
     std::string lHeader = "HTTP/1.0 200 Ok\r\n"
     "Content-Type: text/html\r\n"
@@ -320,7 +320,7 @@ void headers(const int pClient, const char * const pFileName)
 /**********************************************************************/
 /* Give a client a 404 not found status message. */
 /**********************************************************************/
-void notFound(const int pClient)
+void notFound(const WiFiClient * const pClient)
 {
     std::string l404 = "HTTP/1.0 404 NOT FOUND\r\n"
     "Content-Type: text/html\r\n"
@@ -346,7 +346,7 @@ void notFound(const int pClient)
 /**********************************************************************/
 /* Give a client a "found" status message. */
 /**********************************************************************/
-void home(const int pClient) {
+void home(const WiFiClient * const pClient) {
     std::string lHome = "HTTP/1.0 200 Ok\r\n"
     "Content-Type: text/html\r\n"
     "\r\n"
@@ -366,7 +366,7 @@ void home(const int pClient) {
     }
 }
 
-void togglePage(const int pClient) {
+void togglePage(const WiFiClient * const pClient) {
     std::string lTogglePage = "HTTP/1.0 200 Ok\r\n"
     "Content-Type: text/html\r\n"
     "\r\n"
@@ -402,7 +402,7 @@ void togglePage(const int pClient) {
  * return.  Process the request appropriately.
  * Parameters: the socket connected to the client */
 /**********************************************************************/
-int acceptRequest(const int pClient, int * const pResult) {
+int acceptRequest(const WiFiClient * const pClient, int * const pResult) {
     if(nullptr == pResult) {
         std::cerr << "[ERROR] Result is a nullptr !" << std::endl;
         return -1;
