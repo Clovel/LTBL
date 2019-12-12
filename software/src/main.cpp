@@ -10,15 +10,20 @@
 #include "Relay.hpp"
 #include "Switch.hpp"
 
+#include "wificallbacks.hpp"
+#include "webtools.hpp"
+
 #include <Arduino.h>
 
-#include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library
-#include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
-#include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+#include <FS.h>     /* FileSystem header */
+
+#include <ESP8266WiFi.h>          /* ESP8266 Core WiFi Library */
+#include <DNSServer.h>            /* Local DNS Server used for redirecting all requests to the configuration portal */
+#include <ESP8266WebServer.h>     /* Local WebServer used to serve the configuration portal */
+#include <WiFiManager.h>          /* https://github.com/tzapu/WiFiManager WiFi Configuration Magic */
 
 /* Defines --------------------------------------------- */
-#define LOG_BAUDRATE 9600
+#define LOG_BAUDRATE 115200
 
 #define LED_DIO    D1
 #define SWITCH_DIO D2
@@ -36,7 +41,7 @@ WiFiServer   *gServer  = nullptr;
 /* Static variables ------------------------------------ */
 static std::string sRequest;
 
-/* On-boot routine */
+/* On-boot routine ------------------------------------- */
 void setup(void) {
     /* Set up the serial port for printing logs */
     Serial.begin(LOG_BAUDRATE);
@@ -49,11 +54,24 @@ void setup(void) {
 
     /* Init WiFi manager */
     gWiFiMgr = new WiFiManager;
+
+    /** Set callback that gets called when connecting 
+     * to previous WiFi fails, 
+     * and enters Access Point mode */
+    gWiFiMgr->setAPCallback(configModeCallback);
+
+    /** Fetches SSID and password and tries to connect
+     * if it does not connect it starts an access point with the specified name
+     * (defined here by AP_PASSWD)
+     * and goes into a blocking loop awaiting configuration
+     */
     if(!gWiFiMgr->autoConnect(AP_NAME, AP_PASSWD)) {
         Serial.println("[ERROR] Failed to connect to WiFi !");
         ESP.reset();
         delay(1000U);
     }
+    Serial.print("[BOOT ] Successfully connected to ");
+    Serial.println(WiFi.SSID());
     Serial.print("[BOOT ] IPv4 Address : ");
     Serial.println(WiFi.localIP());
 
@@ -65,7 +83,7 @@ void setup(void) {
     Serial.println("[BOOT ] System booted !");
 }
 
-/* Main loop routine */
+/* Main loop routine ----------------------------------- */
 void loop(void) {
     static bool              lChangeRelayState  = false;
     static bool              lOldRelayState     = gRelay->isOn();
@@ -79,45 +97,16 @@ void loop(void) {
         Serial.println(lClient.localIP());
 
         std::string lCurrentLine;
+        int lResult = 0;
 
         /* Loop while the client is connected */
         while(lClient.connected()) {
-            /* Process iof there are still bytes to read from the client */
-            if(lClient.available()) {
-                /* Read a byte */
-                const char lChar = lClient.read();
-
-                /* Append it to the header string */
-                sRequest += lChar;
-
-                /* Check if the byte is a newline character */
-                if('\n' == lChar) {
-                    /** if the current line is blank, you got two newline characters in a row.
-                     * that's the end of the client HTTP request, so send a response
-                     */
-                    if (0 == lCurrentLine.length()) {
-                        /** HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
-                         * and a content-type so the client knows what's coming, then a blank line
-                         */
-                        lClient.println("HTTP/1.1 200 OK");
-                        lClient.println("Content-type:text/html");
-                        lClient.println("Connection: close");
-                        lClient.println();
-
-                        /* Print the received request for debugging purposes */
-
-                        /* Check if the LED needs to change state */
-
-                        /* Display the HTML web page */
-
-                        /* Break out of the while loop */
-                        break;
-                    } else {
-                        lCurrentLine = "";
-                    }
-                } else if ('\r' != lChar) {
-                    lCurrentLine += lChar;
-                }
+            /* Process request */
+            lResult = acceptRequest(&lClient);
+            if(0 != lResult) {
+                Serial.println("[ERROR] Failed to process remote request w/ acceptRequest !");
+            } else {
+                Serial.println("[DEBUG] Processed acceptRequest successfully !");
             }
         }
 
