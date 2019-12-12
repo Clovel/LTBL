@@ -399,7 +399,7 @@ void togglePage(WiFiClient * const pClient) {
 
 /**********************************************************************/
 /* A request has caused a call to accept() on the server port to
- * return.  Process the request appropriately.
+ * return. Process the request appropriately.
  * Parameters: the socket connected to the client */
 /**********************************************************************/
 int acceptRequest(WiFiClient * const pClient) {
