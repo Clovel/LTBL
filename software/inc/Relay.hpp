@@ -8,6 +8,7 @@
 
 /* Includes -------------------------------------------- */
 #include "elec.hpp"
+#include <string>
 
 /* Defines --------------------------------------------- */
 
@@ -28,6 +29,7 @@ namespace elec {
             /* Getters */
             bool isOn(void) const;
             relayMode_t mode(void) const;
+            std::string stringState(void) const;
 
             /* Setters */
             void setMode(const relayMode_t &pMode);

@@ -94,6 +94,10 @@ namespace elec {
         return mMode;
     }
 
+    std::string Relay::stringState(void) const {
+        return 0 == mState ? "OFF" : "ON";
+    }
+
     /* Setters */
     void Relay::setMode(const relayMode_t &pMode) {
         mMode = pMode;
