@@ -1,5 +1,9 @@
 /**
+ * Let There Be Light project
+ * 
  * @brief Main testing file
+ * 
+ * @file tests_main.cpp
  */
 
 /* Includes -------------------------------------------- */
@@ -20,6 +24,12 @@ static void print_usage(const char * const pProgName) {
 /* Mock functions -------------------------------------- */
 void digitalWrite(int pPin, int pLevel) {
     std::cout << "[TEST ] Writing " << pLevel << " to pin " << pPin << std::endl;
+}
+
+int digitalRead(int pPin) {
+    std::cout << "[TEST ] Reading pin " << pPin << std::endl;
+
+    return 0; /* Just to avoid a warning */
 }
 
 void pinMode(int pPin, int pMode) {

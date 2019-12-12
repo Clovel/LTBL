@@ -1,6 +1,7 @@
 /** 
- * Copyright Clovis Durand
  * Let There Be Light project
+ * 
+ * @brief Relay class implementation
  * 
  * @file Relay.cpp
  */
@@ -145,5 +146,12 @@ namespace elec {
          */
         mState = !mState;
         digitalWrite(mPin, mState);
+
+#ifndef TESTS
+        Serial.print("[DEBUG] <Relay::switchState> Switching to ");
+        Serial.println(mState);
+#else /* TESTS */
+        std::cout << "[DEBUG] <Relay::switchState> Switching to " << mState << std::endl;
+#endif /* TESTS */
     }
 }
