@@ -96,19 +96,32 @@ void loop(void) {
         Serial.print("[DEBUG] New client, IP : ");
         Serial.println(lClient.localIP());
 
-        std::string lCurrentLine;
+        std::string lCurrentLine = "";
         int lResult = 0;
 
-        /* Loop while the client is connected */
-        while(lClient.connected()) {
-            /* Process request */
-            lResult = acceptRequest(&lClient);
-            if(0 != lResult) {
-                Serial.println("[ERROR] Failed to process remote request w/ acceptRequest !");
-            } else {
-                Serial.println("[DEBUG] Processed acceptRequest successfully !");
-            }
+        // /* Loop while the client is connected */
+        // while(lClient.connected()) {
+        //     /* Process request */
+        //     lResult = acceptRequest(&lClient);
+        //     if(0 != lResult) {
+        //         Serial.println("[ERROR] Failed to process remote request w/ acceptRequest !");
+        //     } else {
+        //         Serial.println("[DEBUG] Processed acceptRequest successfully !");
+        //     }
+        // }
+
+        lResult = testAccept(&lClient, &lCurrentLine, &sRequest);
+        if(0 != lResult) {
+            Serial.println("[ERROR] Failed to process remote request w/ testAccept !");
+        } else {
+            Serial.println("[DEBUG] Processed testAccept successfully !");
         }
+
+        /* Close the client when operation is done */
+        sRequest = "";
+        lClient.stop();
+        Serial.println("Client disconnected.");
+        Serial.println();
 
         /* Clear the request string */
         sRequest = "";
