@@ -51,31 +51,23 @@ void home(const int pClient);
 void togglePage(const int pClient);
 
 /* Functions ------------------------------------------- */
-int htmlSend(const int pClient, const char * const pStr) {
+int htmlSend(const WiFiClient * const pClient, const char * const pStr) {
     int lResult = 0;
     
-    errno = 0;
-    lResult = send(pClient, pStr, strlen(pStr), 0);
+    lResult = pClient->write(pStr, strlen(pStr));
     if(0 > lResult) {
         std::cerr << "[ERROR] <htmlSend> send failed with error code " << lResult << std::endl;
-        if(errno) {
-            std::cerr << "        errno = " << errno << ", " << strerror(errno) << std::endl;
-        }
     }
 
     return lResult;
 }
 
-int htmlSend(const int pClient, const std::string pStr) {
+int htmlSend(const WiFiClient * const pClient, const std::string pStr) {
     int lResult = 0;
     
-    errno = 0;
-    lResult = send(pClient, pStr.c_str(), pStr.length(), 0);
+    lResult = pClient->write(pStr.c_str(), pStr.length());
     if(0 > lResult) {
         std::cerr << "[ERROR] <htmlSend> send failed with error code " << lResult << std::endl;
-        if(errno) {
-            std::cerr << "        errno = " << errno << ", " << strerror(errno) << std::endl;
-        }
     }
 
     return lResult;
