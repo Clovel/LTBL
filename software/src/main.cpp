@@ -33,6 +33,8 @@ elec::Switch *gSwitch  = nullptr;
 WiFiManager  *gWiFiMgr = nullptr;
 WiFiServer   *gServer  = nullptr;
 
+static std::string sRequest;
+
 /* On-boot routine */
 void setup(void) {
     /* Set up the serial port for printing logs */
@@ -67,6 +69,64 @@ void loop(void) {
     static bool              lChangeRelayState  = false;
     static bool              lOldRelayState     = gRelay->isOn();
     static int               lManualSwitchState = 0;
+
+    /* Listen for incoming web clients */
+    WiFiClient lClient = gServer->available();
+
+    if(0 < lClient) {
+        Serial.print("[DEBUG] New client, IP : ");
+        Serial.println(lClient.localIP());
+
+        std::string lCurrentLine;
+
+        /* Loop while the client is connected */
+        while(lClient.connected()) {
+            /* Process iof there are still bytes to read from the client */
+            if(lClient.available()) {
+                /* Read a byte */
+                const char lChar = lClient.read();
+
+                /* Append it to the header string */
+                sRequest += lChar;
+
+                /* Check if the byte is a newline character */
+                if('\n' == lChar) {
+                    /** if the current line is blank, you got two newline characters in a row.
+                     * that's the end of the client HTTP request, so send a response
+                     */
+                    if (0 == lCurrentLine.length()) {
+                        /** HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
+                         * and a content-type so the client knows what's coming, then a blank line
+                         */
+                        lClient.println("HTTP/1.1 200 OK");
+                        lClient.println("Content-type:text/html");
+                        lClient.println("Connection: close");
+                        lClient.println();
+
+                        /* Print the received request for debugging purposes */
+
+                        /* Check if the LED needs to change state */
+
+                        /* Display the HTML web page */
+
+                        /* Break out of the while loop */
+                        break;
+                    } else {
+                        lCurrentLine = "";
+                    }
+                } else if ('\r' != lChar) {
+                    lCurrentLine += lChar;
+                }
+            }
+        }
+
+        /* Clear the request string */
+        sRequest = "";
+
+        /* Close the connection */
+        lClient.stop();
+        Serial.println("[DEBUG] Request processed, disconected client.");
+    }
 
     /* Check manual switch state */
     if(lOldRelayState != (lManualSwitchState = gSwitch->isActive())) {
