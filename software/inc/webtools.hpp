@@ -1,7 +1,7 @@
 /** 
  * Let There Be Light project
  * 
- * @file remoteRequest.hxx
+ * @file webtools.hpp
  */
 
 /* Includes -------------------------------------------- */
