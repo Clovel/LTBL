@@ -28,3 +28,6 @@ typedef enum _restMethods {
 
 /* Functions ------------------------------------------- */
 int acceptRequest(WiFiClient * const pClient);
+int testAccept(WiFiClient * const pClient, 
+    std::string * const pCurrentLine, 
+    std::string * const pHeader);

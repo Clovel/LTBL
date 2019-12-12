@@ -558,3 +558,104 @@ int acceptRequest(WiFiClient * const pClient) {
 
     return 0;
 }
+
+/**********************************************************************/
+/* A test function given as an example by 
+ * https://randomnerdtutorials.com/wifimanager-with-esp8266-autoconnect-custom-parameter-and-manage-your-ssid-and-password/ */
+/**********************************************************************/
+int testAccept(WiFiClient * const pClient, 
+    std::string * const pCurrentLine, 
+    std::string * const pHeader)
+{
+    if(nullptr == pClient) {
+        Serial.println("[ERROR] pClient is a nullptr !");
+        return -1;
+    }
+
+    if(nullptr == pCurrentLine) {
+        Serial.println("[ERROR] pCurrentLine is a nullptr !");
+        return -1;
+    }
+
+    if(nullptr == pHeader) {
+        Serial.println("[ERROR] pHeader is a nullptr !");
+        return -1;
+    }
+
+    /* Loop while the client is still connected */
+    while(pClient->connected()) {
+        /* Check if there's bytes to read from the client */
+        if(pClient->available()) {
+            /* Read a byte */
+            const char lChar = pClient->read();
+
+            /* Print the char out the serial port */
+            Serial.write(lChar);
+
+            /* Add the char to the header */
+            *pHeader += lChar;
+
+            /* Check if the char is a newline */
+            if('\n' == lChar) {
+                /** if the current line is blank, you got two newline characters in a row.
+                 * that's the end of the client HTTP request, so send a response
+                 */
+                if(0 == pCurrentLine->length()) {
+                    /** HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
+                     * and a content-type so the client knows what's coming, then a blank line
+                     */
+                    pClient->println("HTTP/1.1 200 OK");
+                    pClient->println("Content-type:text/html");
+                    pClient->println("Connection: close");
+                    pClient->println();
+
+                    /* Display the HTML web page */
+                    pClient->println("<!DOCTYPE html><html>");
+                    pClient->println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+                    pClient->println("<link rel=\"icon\" href=\"data:,\">");
+                    // CSS to style the on/off buttons 
+                    // Feel free to change the background-color and font-size attributes to fit your preferences
+                    pClient->println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
+                    pClient->println(".button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;");
+                    pClient->println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
+                    pClient->println(".button2 {background-color: #77878A;}</style></head>");
+
+                    /* Turn the relay ON or OFF */
+                    if (String(pHeader->c_str()).indexOf("GET /5/on") >= 0) {
+                        Serial.println("Relay ON");
+                        gRelay->turnOn();
+                    } else if (String(pHeader->c_str()).indexOf("GET /5/off") >= 0) {
+                        Serial.println("Relay OFF");
+                        gRelay->turnOff();
+                    }
+
+                    /* Web page heading */
+                    pClient->println("<body><h1>ESP8266 Web Server</h1>");
+
+                    /* Display current state of Relay */
+                    pClient->println(("<p>GPIO 5 - State " + gRelay->stringState() + "</p>").c_str());
+                    if(gRelay->isOn()) {
+                        pClient->println("<p><a href=\"/5/off\"><button class=\"button button2\">OFF</button></a></p>");
+                    } else {
+                        pClient->println("<p><a href=\"/5/on\"><button class=\"button\">ON</button></a></p>");
+                    }
+
+                    /* End the web page */
+                    pClient->println("</body></html>");
+                    pClient->println();
+
+                    break;
+                } else {
+                    *pCurrentLine = "";
+                }
+            } else if ('\r' != lChar) {
+                 /** if you got anything else but a carriage return character,
+                 * add it to the end of the currentLine
+                 */
+                *pCurrentLine += lChar;
+            }
+        }
+    }
+
+    return 0;
+}
