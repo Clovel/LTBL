@@ -85,10 +85,10 @@ int htmlSend(const WiFiClient * const pClient, const std::string pStr) {
  *             the size of the buffer
  * Returns: the number of bytes stored (excluding null) */
 /**********************************************************************/
-int getLine(int pSock, char *pBuf, int pSize)
+int getLine(const WiFiClient * const pClient, char *pBuf, int pSize)
 {
     /* Variable declarations */
-    char c = '\0';
+    char lChar = '\0';
     char *lBuf = pBuf;
     bool lGotCR = false;
     int lReadChars = 0, i = 0;
@@ -96,90 +96,61 @@ int getLine(int pSock, char *pBuf, int pSize)
     /* Loop over the line */
     do {
         /* Read a character */
-        errno = 0;
-        lReadChars = recv(pSock, &c, 1U, 0);
-
-        /* Check errno */
-        bool lErrnoBreak = false;
-        switch (errno)
-        {
-            case 0:
-                /* Nothing to do, everything is fine ! */
-                break;
-#if EAGAIN != EWOULDBLOCK
-            case EAGAIN:
-#endif /* EAGAIN != EWOULDBLOCK */
-            case EWOULDBLOCK: 
-                /* Socket is O_NONBLOCK and there is no data available */
-                std::cerr << "[WARN ] <getLine> recv got EAGAIN, this is normal, nothing received, errno = " << errno << " (" << std::string(strerror(errno)) << ")" << std::endl;
-                lErrnoBreak = true;
-                break;
-            case EINTR: 
-                /* An interrupt (signal) has been caught */
-                /* This should be ingored in most cases */
-                std::cerr << "[ERROR] <getLine> recv got EINTR, an interrupt (signal) has been caught. Should be ignored. errno = " << errno << " (" << std::string(strerror(errno)) << ")" << std::endl;
-                lErrnoBreak = true;
-                break;
-            default:
-                /* socket has an error, not valid anymore */
-                std::cerr << "[ERROR] <getLine> recv failed, errno = " << errno << " (" << std::string(strerror(errno)) << ")" << std::endl;
-                //std::cout << "[DEBUG] <getLine> c = " << c << ", i.e. : " << std::hex << (unsigned int)c << std::dec << std::endl;
-                return -1;
-        }
-
-        /** Break the do/while loop if we caught an errno 
-         * that requires a break of loop */
-        if(lErrnoBreak) {
-            break;
-        }
+        lChar = pClient->read();
 
         /* Check lReadChars */
         if(0 > lReadChars) {
-            std::cerr << "[ERROR] <getLine> recv failed !" << std::endl;
+            Serial.println("[ERROR] <getLine> recv failed !");
             return -1;
         } else if (0 == lReadChars) {
-            //std::cout << "[WARN ] <getLine> Unexpected behavior, read 0 chars from socket but no errors..." << std::endl;
+            //Serial.println("[WARN ] <getLine> Unexpected behavior, read 0 chars from socket but no errors...");
             /* The socket buffer is empty, return */
             break;
         }
 
         /* Put the character in the buffer */
-        *lBuf = c;
+        *lBuf = lChar;
         ++lBuf;
 
         /* Increment the number of chars read */
         ++i;
 
         /* Check for CR */
-        if('\r' == c) {
+        if('\r' == lChar) {
             lGotCR = true;
             /* e expect to get a LF afterwards */
-            //std::cout << "[DEBUG] <getLine> Got CR, expecting an LF..." << std::endl;
+            //Serial.println("[DEBUG] <getLine> Got CR, expecting an LF...");
         }
 
         /** Check the character for LF 
          * Note : In the HTTP protocol, the CR-LF sequence is always used to terminate a line.
          */
-        if('\n' == c) {
+        if('\n' == lChar) {
             if(!lGotCR) {
-                std::cout << "[WARN ] <getLine> Got LF without CR, doesn't comply with HTTP protocols !" << std::endl;
+                Serial.println("[WARN ] <getLine> Got LF without CR, doesn't comply with HTTP protocols !");
             } else {
-                //std::cout << "[DEBUG] <getLine> Got LF after CR !" << std::endl;
+                //Serial.println("[DEBUG] <getLine> Got LF after CR !");
             }
             break;
         }
 
-        if('\0' == c) {
-            //std::cout << "[DEBUG] <getLine> Got \\0, exiting..." << std::endl;
+        if('\0' == lChar) {
+            //Serial.println("[DEBUG] <getLine> Got \\0, exiting...");
             break;
         }
 
-        //std::cout << "[DEBUG] <getLine> c = " << c << ", i.e. : " << std::hex << (unsigned int)c << std::dec << std::endl;
+        // Serial.print("[DEBUG] <getLine> lChar = ");
+        // Serial.print(", i.e. : 0x");
+        // Serial.println(lChar, HEX);
         // {
         //     std::string pBufString(pBuf);
-        //     std::cout << "[DEBUG] <getLine> pBufString = " << std::string(pBufString) << std::endl;
+        //     Serial.print("[DEBUG] <getLine> pBufString = ");
+        //     Serial.println(std::string(pBufString));
         //     if(pBufString.empty()) {
-        //         std::cout << "[DEBUG] <getLine> c = " << c << ", i.e. : " << std::hex << (unsigned int)c << std::dec << std::endl;
+        //         Serial.print("[DEBUG] <getLine> lChar = ");
+        //         Serial.print(lChar);
+        //         Serial.print(", i.e. : 0x");
+        //         Serial.println(lChar, HEX);
         //     }
         // }
 
