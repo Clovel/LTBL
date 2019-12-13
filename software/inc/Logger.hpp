@@ -4,8 +4,10 @@
  * @file Logger.hpp
  */
 
-/* Includes -------------------------------------------- */
+#ifndef LOGGER_HPP
+#define LOGGER_HPP
 
+/* Includes -------------------------------------------- */
 #ifndef TESTS
 /* Arduino */
 #include <Arduino.h>
@@ -15,21 +17,24 @@
 #include <string>
 
 /* Defines --------------------------------------------- */
-#define LOG_ERROR   0x0U
-#define LOG_DEFAULT 0x1U
-#define LOG_WARN    0x2U
-#define LOG_APPL    0x3U
-#define LOG_VERBOSE 0x4U
-#define LOG_DEBUG   0x5U
+#define LOG_MIN     0x0U
+#define LOG_ERROR   0x1U
+#define LOG_DEFAULT 0x2U
+#define LOG_WARN    0x3U
+#define LOG_APPL    0x4U
+#define LOG_VERBOSE 0x5U
+#define LOG_DEBUG   0x6U
+
+#ifdef TESTS
+#define DEC 10
+#define HEX 16
+#define OCT 8
+#define BIN 2
+#endif /* TESTS */
 
 /* Forward declarations -------------------------------- */
 
 /* Type definitions ------------------------------------ */
-
-/* Declare Arduino type String */
-#ifdef TESTS
-using String = std::string;
-#endif /* TESTS */
 
 /**
  * @brief Marker to start log message
@@ -108,16 +113,18 @@ class Logger {
         inline Logger &log(const uint8_t &pLogLevel = LOG_DEFAULT);
     protected:
     private:
-        /* Private members */
-        uint8_t mLogLevel; /* Logger log level */
-        uint8_t mCurrentLogLevel; /* Current message log level */
-        int8_t  mFormat; /* Format with which the Logger prints data */
-        bool    mInitialized; /* Is the logger initialized ? */
-
         /* Constructors */
         Logger();
-        //Logger(const Logger &pLogger);
+        Logger(const Logger &pLogger);
 
         /* Private operators */
         Logger &operator=(const Logger &pLogger);
+
+        /* Private members */
+        uint8_t mLogLevel;          /* Logger log level */
+        uint8_t mCurrentLogLevel;   /* Current message log level */
+        int8_t  mFormat;            /* Format with which the Logger prints data */
+        bool    mInitialized;       /* Is the logger initialized ? */
 };
+
+#endif /* LOGGER_HPP */

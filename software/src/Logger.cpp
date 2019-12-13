@@ -22,8 +22,9 @@
 
 /* Print function -implementation ---------------------- */
 template <typename T>
-static size_t print(const T &pArg, const size_t &pSize) {
+static size_t print(const T &pArg, const int8_t &pFormat = -1, const size_t &pSize = 0U) {
     (void)pSize;
+    (void)pFormat;
 
 #ifndef TESTS
     return Serial.print(*pArg);
@@ -35,8 +36,9 @@ static size_t print(const T &pArg, const size_t &pSize) {
 }
 
 template <typename T>
-static size_t println(const T &pArg, const size_t &pSize) {
+static size_t println(const T &pArg, const int8_t &pFormat = -1, const size_t &pSize = 0U) {
     (void)pSize;
+    (void)pFormat;
 
 #ifndef TESTS
     return Serial.println(*pArg);
@@ -47,18 +49,26 @@ static size_t println(const T &pArg, const size_t &pSize) {
 #endif /* TESTS */
 }
 
-/* LogLevel struct impletentation ---------------------- */
+static void flush(void) {
+#ifndef TESTS
+    return Serial.flush();
+#else /* TESTS */
+    std::cout << std::flush;
+#endif /* TESTS */
+}
+
+/* LogLevel struct implementation ---------------------- */
 LogLevel::LogLevel(const uint8_t &pLogLevel) : 
     level(pLogLevel) 
 {
     /* Empty */
 }
 
-/* EndLog struct impletentation ------------------------ */
+/* EndLog struct implementation ------------------------ */
 
-/* FlushLog struct impletentation ---------------------- */
+/* FlushLog struct implementation ---------------------- */
 
-/* Format struct impletentation ------------------------ */
+/* Format struct implementation ------------------------ */
 Format::Format(const int8_t &pFmt) : 
     type(pFmt)
 {
@@ -66,8 +76,6 @@ Format::Format(const int8_t &pFmt) :
 }
 
 /* Logger class implementation ------------------------- */
-#ifndef TESTS
-
 /* Constructors */
 Logger::Logger() : 
     mLogLevel(LOG_DEFAULT),
@@ -88,10 +96,12 @@ Logger &Logger::instance(void) {
     static Logger sLogger;
 
     if(!sLogger.mInitialized) {
+#ifndef TESTS
         Serial.begin(LOG_BAUDRATE);
 
         /* Wait for the Serial port to connect, needed for Leonardo only */
         while(!Serial);
+#endif /* TESTS */
 
         sLogger.mInitialized = true;
     }
@@ -117,157 +127,159 @@ inline Logger &Logger::log(const uint8_t &pLogLevel) {
 
 /* Operator implementation ----------------------------- */
 #ifndef TESTS
-Logger& Logger::operator<<(const String &pArg)
+Logger &Logger::operator<<(const String &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
-        Serial.print(pArg);
+        print(pArg);
     }
     
     return *this;
 }
 #endif /* TESTS */
 
-Logger& Logger::operator<<(const std::string &pArg)
+Logger &Logger::operator<<(const std::string &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
-        Serial.print(pArg.c_str());
+        print(pArg.c_str());
     }
     
     return *this;
 }
 
-Logger& Logger::operator<<(const char * const pArg)
+Logger &Logger::operator<<(const char * const pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
-        Serial.print(pArg);
+        print(pArg);
     }
 
     return *this;
 }
 
-Logger& Logger::operator<<(const char &pArg)
+Logger &Logger::operator<<(const char &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
-        Serial.print(pArg);
+        print(pArg);
     }
     
     return *this;
 }
 
-Logger& Logger::operator<<(const unsigned char &pArg)
+Logger &Logger::operator<<(const unsigned char &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            Serial.print(pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            Serial.print(pArg); /* DEC */
+            print(pArg); /* DEC */
         }
     }
     
     return *this;
 }
 
-Logger& Logger::operator<<(const int &pArg)
+Logger &Logger::operator<<(const int &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            Serial.print(pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            Serial.print(pArg); /* DEC */
+            print(pArg); /* DEC */
         }
     }
     
     return *this;
 }
 
-Logger& Logger::operator<<(const unsigned int &pArg)
+Logger &Logger::operator<<(const unsigned int &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            Serial.print(pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            Serial.print(pArg); /* DEC */
+            print(pArg); /* DEC */
         }
     }
     
     return *this;
 }
 
-Logger& Logger::operator<<(const long &pArg)
+Logger &Logger::operator<<(const long &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            Serial.print(pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            Serial.print(pArg); /* DEC */
+            print(pArg); /* DEC */
         }
     }
     
     return *this;
 }
 
-Logger& Logger::operator<<(const unsigned long &pArg)
+Logger &Logger::operator<<(const unsigned long &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            Serial.print(pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            Serial.print(pArg); /* DEC */
+            print(pArg); /* DEC */
         }
     }
     
     return *this;
 }
 
-Logger& Logger::operator<<(const double &pArg)
+Logger &Logger::operator<<(const double &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            Serial.print(pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            Serial.print(pArg); /* BIN */
+            print(pArg); /* BIN */
         }
     }
     
     return *this;
 }
 
-Logger& Logger::operator<<(const float &pArg)
+Logger &Logger::operator<<(const float &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            Serial.print(pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            Serial.print(pArg); /* BIN */
+            print(pArg); /* BIN */
         }
     }
     
     return *this;
 }
 
-Logger& Logger::operator<<(const LogLevel &pArg)
+Logger &Logger::operator<<(const LogLevel &pArg)
 {
     mCurrentLogLevel = pArg.level;
 
     return *this;
 }
 
-Logger& Logger::operator<<(const EndLog &pArg)
+Logger &Logger::operator<<(const EndLog &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    (void)pArg;
+
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
-        Serial.println("");
+        println("");
     }
     mCurrentLogLevel = LOG_DEFAULT;
     mFormat = -1;
@@ -275,11 +287,13 @@ Logger& Logger::operator<<(const EndLog &pArg)
     return *this;
 }
 
-Logger& Logger::operator<<(const FlushLog &pArg)
+Logger &Logger::operator<<(const FlushLog &pArg)
 {
-    if (mCurrentLogLevel > LOG_DEFAULT &&
+    (void)pArg;
+
+    if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
-        Serial.flush();
+        flush();
     }
     mCurrentLogLevel = LOG_DEFAULT;
     mFormat = -1;
@@ -287,7 +301,7 @@ Logger& Logger::operator<<(const FlushLog &pArg)
     return *this;
 }
 
-Logger& Logger::operator<<(const Format &pArg)
+Logger &Logger::operator<<(const Format &pArg)
 {
     switch (pArg.type)
     {
@@ -304,5 +318,3 @@ Logger& Logger::operator<<(const Format &pArg)
     
     return *this;
 }
-
-#endif /* TESTS */
