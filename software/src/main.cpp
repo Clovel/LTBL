@@ -13,6 +13,8 @@
 #include "wificallbacks.hpp"
 #include "webtools.hpp"
 
+#include "def.h"
+
 #include <Arduino.h>
 
 //#include <FS.h>     /* FileSystem header */
@@ -23,8 +25,6 @@
 #include <WiFiManager.h>          /* https://github.com/tzapu/WiFiManager WiFi Configuration Magic */
 
 /* Defines --------------------------------------------- */
-#define LOG_BAUDRATE 115200
-
 #define LED_DIO    D1
 #define SWITCH_DIO D2
 
