@@ -50,6 +50,7 @@ a.out
 *.dylib
 *.a
 *.so
+*.o
 
 web-example
 !web-example/
