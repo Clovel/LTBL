@@ -6,6 +6,9 @@
  * @file Relay.hpp
  */
 
+#ifndef ELEC_RELAY_HPP
+#define ELEC_RELAY_HPP
+
 /* Includes -------------------------------------------- */
 #include "elec.hpp"
 #include <string>
@@ -47,3 +50,5 @@ namespace elec {
 
     };
 }
+
+#endif /* ELEC_RELAY_HPP */

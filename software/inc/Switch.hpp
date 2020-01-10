@@ -6,6 +6,9 @@
  * @file Switch.hpp
  */
 
+#ifndef ELEC_SWITCH_HPP
+#define ELEC_SWITCH_HPP
+
 /* Includes -------------------------------------------- */
 #include "elec.hpp"
 
@@ -26,3 +29,5 @@ namespace elec {
             gpioPin_t mPin;
     };
 }
+
+#endif /* ELEC_SWITCH_HPP */
