@@ -89,6 +89,8 @@ set(BUILD_VERSION ${GIT_COMMIT_HASH} CACHE STRING "Build version" FORCE)
 # Project configuration 
 #------------------------------------------------------------------------------
 
+add_definitions(-DUNIX)
+
 #------------------------------------------------------------------------------
 # Sub-directories 
 #------------------------------------------------------------------------------
@@ -98,3 +100,4 @@ set(BUILD_VERSION ${GIT_COMMIT_HASH} CACHE STRING "Build version" FORCE)
 
 add_subdirectory(software/tests)
 add_subdirectory(software/docs)
+add_subdirectory(examples)
