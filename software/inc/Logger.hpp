@@ -8,10 +8,10 @@
 #define LOGGER_HPP
 
 /* Includes -------------------------------------------- */
-#ifndef TESTS
+#ifdef ESP8266_NODEMCU
 /* Arduino */
 #include <Arduino.h>
-#endif /* TESTS */
+#endif /* ESP8266_NODEMCU */
 
 /* C++ system */
 #include <string>
@@ -25,12 +25,12 @@
 #define LOG_VERBOSE 0x5U
 #define LOG_DEBUG   0x6U
 
-#ifdef TESTS
+#ifdef UNIX
 #define DEC 10
 #define HEX 16
 #define OCT 8
 #define BIN 2
-#endif /* TESTS */
+#endif /* UNIX */
 
 /* Forward declarations -------------------------------- */
 

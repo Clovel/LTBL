@@ -12,9 +12,9 @@
 /* C++ System */
 #include <sstream>
 
-#ifdef TESTS
+#ifdef UNIX
 #include <iostream>
-#endif /* TESTS */
+#endif /* UNIX */
 
 /* Defines --------------------------------------------- */
 
@@ -26,13 +26,19 @@ static size_t print(const T &pArg, const int8_t &pFormat = -1, const size_t &pSi
     (void)pSize;
     (void)pFormat;
 
-#ifndef TESTS
-    return Serial.print(*pArg);
-#else /* TESTS */
+    size_t lSize = 0U;
+
+#ifdef ESP8266_NODEMCU
+    lSize = Serial.print(*pArg);
+#endif /* ESP8266_NODEMCU */
+
+#ifdef UNIX
     std::cout << pArg;
 
-    return sizeof(pArg);
-#endif /* TESTS */
+    lSize = sizeof(pArg);
+#endif /* UNIX */
+
+    return lSize;
 }
 
 template <typename T>
@@ -40,21 +46,29 @@ static size_t println(const T &pArg, const int8_t &pFormat = -1, const size_t &p
     (void)pSize;
     (void)pFormat;
 
-#ifndef TESTS
-    return Serial.println(*pArg);
-#else /* TESTS */
+    size_t lSize = 0U;
+
+#ifdef ESP8266_NODEMCU
+    lSize = Serial.println(*pArg);
+#endif /* ESP8266_NODEMCU */
+
+#ifdef UNIX
     std::cout << pArg << std::endl;
 
-    return sizeof(pArg);
-#endif /* TESTS */
+    lSize = sizeof(pArg);
+#endif /* UNIX */
+
+    return lSize;
 }
 
 static void flush(void) {
-#ifndef TESTS
+#ifdef ESP8266_NODEMCU
     return Serial.flush();
-#else /* TESTS */
+#endif /* ESP8266_NODEMCU */
+
+#ifdef UNIX
     std::cout << std::flush;
-#endif /* TESTS */
+#endif /* UNIX */
 }
 
 /* LogLevel struct implementation ---------------------- */
@@ -96,12 +110,12 @@ Logger &Logger::instance(void) {
     static Logger sLogger;
 
     if(!sLogger.mInitialized) {
-#ifndef TESTS
+#ifdef ESP8266_NODEMCU
         Serial.begin(LOG_BAUDRATE);
 
         /* Wait for the Serial port to connect, needed for Leonardo only */
         while(!Serial);
-#endif /* TESTS */
+#endif /* ESP8266_NODEMCU */
 
         sLogger.mInitialized = true;
     }
@@ -126,17 +140,17 @@ inline Logger &Logger::log(const uint8_t &pLogLevel) {
 }
 
 /* Operator implementation ----------------------------- */
-#ifndef TESTS
+#ifdef ESP8266_NODEMCU
 Logger &Logger::operator<<(const String &pArg)
 {
     if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
-        print(pArg);
+        print(&pArg);
     }
     
     return *this;
 }
-#endif /* TESTS */
+#endif /* ESP8266_NODEMCU */
 
 Logger &Logger::operator<<(const std::string &pArg)
 {
