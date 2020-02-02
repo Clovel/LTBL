@@ -569,10 +569,10 @@ int testAccept(WiFiClient * const pClient,
                     (void)htmlSend(pClient, htmlHead);
 
                     /* Turn the relay ON or OFF */
-                    if (String(pHeader->c_str()).indexOf("GET /5/on") >= 0) {
+                    if (pHeader->find("GET /5/on") != std::string::npos) {
                         *gLogger << "Relay ON" << endlog;
                         gRelay->turnOn();
-                    } else if (String(pHeader->c_str()).indexOf("GET /5/off") >= 0) {
+                    } else if (pHeader->find("GET /5/off") != std::string::npos) {
                         *gLogger << "Relay OFF" << endlog;
                         gRelay->turnOff();
                     } else if (String(pHeader->c_str()).indexOf("GET /5") >= 0) {
