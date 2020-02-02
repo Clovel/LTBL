@@ -19,9 +19,9 @@ int main(const int argc, const char * const * const argv) {
     (void)argc;
     (void)argv;
 
-    Logger &sLogger = Logger::instance();
+    Logger &lLogger = Logger::instance();
 
-    sLogger << "[TEST ] Testing logger capabilities !" << endlog;
+    lLogger << "[TEST ] Testing logger capabilities !" << endlog;
 
     return 0;
 }
