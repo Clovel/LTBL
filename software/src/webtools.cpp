@@ -5,10 +5,11 @@
  */
 
 /* Includes -------------------------------------------- */
-#include "Relay.hpp"
-
 #include "webtools.hpp"
+
+#include "Relay.hpp"
 #include "HttpRequest.hpp"
+#include "webpage.hpp"
 
 #include "Logger.hpp"
 
@@ -226,19 +227,7 @@ void error_die(const char * const sc)
 /**********************************************************************/
 void unimplemented(WiFiClient * const pClient)
 {
-    std::string lUnimplemented = "HTTP/1.0 501 Method Not Implemented\r\n"
-    "Content-Type: text/html\r\n"
-    "\r\n"
-    "<html lang=\"en\">\r\n"
-    "    <head>\r\n"
-    "        <title>Method Not Implemented</title>\r\n"
-    "    </head>\r\n"
-    "    <body>\r\n"
-    "        HTTP request method not supported.\r\n"
-    "    </body>\r\n"
-    "</html>\r\n\r\n";
-    
-    const int lResult = htmlSend(pClient, lUnimplemented);
+    const int lResult = htmlSend(pClient, htmlResponseCode501);
     if(0 > lResult) {
         *gLogger << "[ERROR] <unimplemented> htmlSend failed with return code " << lResult << endlog;
     }
@@ -250,20 +239,7 @@ void unimplemented(WiFiClient * const pClient)
 /**********************************************************************/
 void badRequest(WiFiClient * const pClient)
 {
-    std::string lBadReq = "HTTP/1.0 400 BAD REQUEST\r\n"
-    "Content-Type: text/html\r\n"
-    "\r\n"
-    "<html lang =\"en\">"
-    "    <head>\r\n"
-    "        <title>web-example - 500 Server error</title>\r\n"
-    "    </head>\r\n"
-    "    <body>\r\n"
-    "        Your browser sent a bad request, "
-    "        such as a POST without a Content-Length.\r\n"
-    "    </body>\r\n"
-    "</html>\r\n\r\n";
-
-    const int lResult = htmlSend(pClient, lBadReq);
+    const int lResult = htmlSend(pClient, htmlResponseCode400);
     if(0 > lResult) {
         *gLogger << "[ERROR] <badRequest> htmlSend failed with return code " << lResult << endlog;
     }
@@ -275,19 +251,7 @@ void badRequest(WiFiClient * const pClient)
 /**********************************************************************/
 void cannotExecute(WiFiClient * const pClient)
 {
-    std::string lExeError = "HTTP/1.0 500 Internal Server Error\r\n"
-    "Content-Type: text/html\r\n"
-    "\r\n"
-    "<html lang =\"en\">"
-    "    <head>\r\n"
-    "        <title>web-example - 500 Server error</title>\r\n"
-    "    </head>\r\n"
-    "    <body>\r\n"
-    "        Server-side error prohibited execution."
-    "    </body>\r\n"
-    "</html>\r\n\r\n";
-
-    const int lResult = htmlSend(pClient, lExeError);
+    const int lResult = htmlSend(pClient, htmlResponseCode500);
     if(0 > lResult) {
         *gLogger << "[ERROR] <cannotExecute> htmlSend failed with return code " << lResult << endlog;
     }
@@ -300,11 +264,7 @@ void cannotExecute(WiFiClient * const pClient)
 /**********************************************************************/
 void headers(WiFiClient * const pClient, const char * const pFileName)
 {
-    std::string lHeader = "HTTP/1.0 200 Ok\r\n"
-    "Content-Type: text/html\r\n"
-    "\r\n";
-
-    const int lResult = htmlSend(pClient, lHeader);
+    const int lResult = htmlSend(pClient, htmlResponseCode200);
     if(0 > lResult) {
         *gLogger << "[ERROR] <headers> htmlSend failed with return code " << lResult << endlog;
     }
@@ -315,22 +275,7 @@ void headers(WiFiClient * const pClient, const char * const pFileName)
 /**********************************************************************/
 void notFound(WiFiClient * const pClient)
 {
-    std::string l404 = "HTTP/1.0 404 NOT FOUND\r\n"
-    "Content-Type: text/html\r\n"
-    "\r\n"
-    "<html lang =\"en\">"
-    "    <head>\r\n"
-    "        <title>web-example - 404 Not Found</title>\r\n"
-    "    </head>\r\n"
-    "    <body>\r\n"
-    "        The server could not fulfill your request because the resource specified\r\n"
-    "        is unavailable or nonexistent.\r\n"
-    "        <br>\r\n"
-    "        Please check that you entered the correct URL.\r\n"
-    "    </body>\r\n"
-    "</html>\r\n\r\n";
-
-    const int lResult = htmlSend(pClient, l404);
+    const int lResult = htmlSend(pClient, htmlResponseCode404);
     if(0 > lResult) {
         *gLogger << "[ERROR] <notFound> htmlSend failed with return code " << lResult << endlog;
     }
@@ -339,21 +284,15 @@ void notFound(WiFiClient * const pClient)
 /**********************************************************************/
 /* Give a client a "found" status message. */
 /**********************************************************************/
-void home(WiFiClient * const pClient) {
-    std::string lHome = "HTTP/1.0 200 Ok\r\n"
-    "Content-Type: text/html\r\n"
-    "\r\n"
-    "<html lang =\"en\">"
-    "    <head>\r\n"
-    "        <title>web-example</title>\r\n"
-    "    </head>\r\n"
-    "    <body>\r\n"
-    "        Hello there !<br>\r\n"
-    "        General Kenobi !\r\n"
-    "    </body>\r\n"
-    "</html>\r\n\r\n";
+void home(WiFiClient * const pClient)
+{
+    int lResult = htmlSend(pClient, htmlResponseCode200);
+    if(0 > lResult) {
+        *gLogger << "[ERROR] <home> htmlSend failed with return code " << lResult << endlog;
+        return;
+    }
 
-    const int lResult = htmlSend(pClient, lHome);
+    lResult = htmlSend(pClient, htmlGeneralKenobi);
     if(0 > lResult) {
         *gLogger << "[ERROR] <home> htmlSend failed with return code " << lResult << endlog;
     }
@@ -381,13 +320,42 @@ void togglePage(WiFiClient * const pClient) {
     "</html>\r\n\r\n";
 
     *gLogger << "[DEBUG] Sending the toggle page code !" << endlog;
-    *gLogger << "[DEBUG] Sending the toggle page code !" << endlog;
 
     const int lResult = htmlSend(pClient, lTogglePage);
     if(0 > lResult) {
         *gLogger << "[ERROR] <togglePage> htmlSend failed with return code " << lResult << endlog;
     } else {
         *gLogger << "[DEBUG] <togglePage> Toggle page code sent : " << lTogglePage.c_str() << endlog;
+    }
+}
+
+void togglePage2(WiFiClient * const pClient)
+{
+    std::string lTogglePage2 = R"=====(
+    <body>
+        <h1>
+            ESP8266 Web Server - LTBL
+        </h1>
+        <p>
+            GPIO 5 - State )=====" + gRelay->stringState() +
+            R"=====(</p>
+        <p>
+            <a href="/5/)=====" + (gRelay->isOn() ? "off" : "on") + R"=====(">
+                <button class="button)=====" + (gRelay->isOn() ? R"=====( button2">)=====" : R"=====(">)=====") +
+                    (gRelay->isOn() ? "OFF" : "ON") +
+                R"=====(</button>
+            </a>
+        </p>
+    </body>
+    )=====";
+
+    *gLogger << "[DEBUG] Sending the toggle page code !" << endlog;
+
+    const int lResult = htmlSend(pClient, lTogglePage2);
+    if(0 > lResult) {
+        *gLogger << "[ERROR] <togglePage2> htmlSend failed with return code " << lResult << endlog;
+    } else {
+        //*gLogger << "[DEBUG] <togglePage2> Toggle page 2 code sent : " << lTogglePage2.c_str() << endlog;
     }
 }
 
@@ -568,6 +536,9 @@ int testAccept(WiFiClient * const pClient,
         return -1;
     }
 
+    std::string lReceivedStr;
+    // size_t lSentBytes = 0U;
+
     /* Loop while the client is still connected */
     while(pClient->connected()) {
         /* Check if there's bytes to read from the client */
@@ -583,28 +554,19 @@ int testAccept(WiFiClient * const pClient,
 
             /* Check if the char is a newline */
             if('\n' == lChar) {
-                /** if the current line is blank, you got two newline characters in a row.
+                /* if the current line is blank, you got two newline characters in a row.
                  * that's the end of the client HTTP request, so send a response
                  */
                 if(0 == pCurrentLine->length()) {
                     /** HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
                      * and a content-type so the client knows what's coming, then a blank line
                      */
-                    pClient->println("HTTP/1.1 200 OK");
-                    pClient->println("Content-type:text/html");
-                    pClient->println("Connection: close");
-                    pClient->println();
+                    (void)htmlSend(pClient, htmlResponseCode200);
 
                     /* Display the HTML web page */
-                    pClient->println("<!DOCTYPE html><html>");
-                    pClient->println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-                    pClient->println("<link rel=\"icon\" href=\"data:,\">");
-                    // CSS to style the on/off buttons 
-                    // Feel free to change the background-color and font-size attributes to fit your preferences
-                    pClient->println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
-                    pClient->println(".button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;");
-                    pClient->println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-                    pClient->println(".button2 {background-color: #77878A;}</style></head>");
+                    (void)htmlSend(pClient, htmlDocType);
+                    (void)htmlSend(pClient, htmlPageBegin);
+                    (void)htmlSend(pClient, htmlHead);
 
                     /* Turn the relay ON or OFF */
                     if (String(pHeader->c_str()).indexOf("GET /5/on") >= 0) {
@@ -613,30 +575,28 @@ int testAccept(WiFiClient * const pClient,
                     } else if (String(pHeader->c_str()).indexOf("GET /5/off") >= 0) {
                         *gLogger << "Relay OFF" << endlog;
                         gRelay->turnOff();
+                    } else if (String(pHeader->c_str()).indexOf("GET /5") >= 0) {
+                        *gLogger << "Get Relay state" << endlog;
                     }
 
-                    /* Web page heading */
-                    pClient->println("<body><h1>ESP8266 Web Server</h1>");
-
-                    /* Display current state of Relay */
-                    pClient->println(("<p>GPIO 5 - State " + gRelay->stringState() + "</p>").c_str());
-                    if(gRelay->isOn()) {
-                        pClient->println("<p><a href=\"/5/off\"><button class=\"button button2\">OFF</button></a></p>");
-                    } else {
-                        pClient->println("<p><a href=\"/5/on\"><button class=\"button\">ON</button></a></p>");
-                    }
+                    /* Toggle web page */
+                    togglePage2(pClient);
 
                     /* End the web page */
-                    pClient->println("</body></html>");
-                    pClient->println();
+                    htmlSend(pClient, htmlPageEnd);
 
+                    /* Break the while loop now that we sent the response */
                     break;
                 } else {
+                    /* Append the current line to the received string buffer */
+                    lReceivedStr += *pCurrentLine;
+
+                    /* Reset the current line */
                     *pCurrentLine = "";
                 }
             } else if ('\r' != lChar) {
-                 /** if you got anything else but a carriage return character,
-                 * add it to the end of the currentLine
+                /* If you got anything else but a carriage return character,
+                 * add it to the end of the current line
                  */
                 *pCurrentLine += lChar;
             }
