@@ -11,9 +11,6 @@
 
 #include "Logger.hpp"
 
-/* ESP includes */
-#include <ESP8266WiFi.h>
-
 /* Defines --------------------------------------------- */
 
 /* Variable declarations ------------------------------- */
