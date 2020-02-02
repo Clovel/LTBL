@@ -13,6 +13,8 @@
 #include "wificallbacks.hpp"
 #include "webtools.hpp"
 
+#include "Logger.hpp"
+
 #include "def.h"
 
 #include <Arduino.h>
@@ -38,13 +40,15 @@ elec::Switch *gSwitch  = nullptr;
 WiFiManager  *gWiFiMgr = nullptr;
 WiFiServer   *gServer  = nullptr;
 
+Logger *gLogger = nullptr;
+
 /* Static variables ------------------------------------ */
 static std::string sRequest;
 
 /* On-boot routine ------------------------------------- */
 void setup(void) {
-    /* Set up the serial port for printing logs */
-    Serial.begin(LOG_BAUDRATE);
+    /* Set up logger */
+    gLogger = &Logger::instance();
 
     /* Init relay */
     gRelay = new elec::Relay(LED_DIO, elec::RELAY_MODE_NORMAL);
@@ -66,21 +70,19 @@ void setup(void) {
      * and goes into a blocking loop awaiting configuration
      */
     if(!gWiFiMgr->autoConnect(AP_NAME, AP_PASSWD)) {
-        Serial.println("[ERROR] Failed to connect to WiFi !");
+        *gLogger << "[ERROR] Failed to connect to WiFi !" << endlog;
         ESP.reset();
         delay(1000U);
     }
-    Serial.print("[BOOT ] Successfully connected to ");
-    Serial.println(WiFi.SSID());
-    Serial.print("[BOOT ] IPv4 Address : ");
-    Serial.println(WiFi.localIP());
+    *gLogger << "[BOOT ] Successfully connected to " << WiFi.SSID() << endlog;
+    *gLogger << "[BOOT ] IPv4 Address : " << WiFi.localIP().toString() << endlog;
 
     /* Set up web server */
     gServer = new WiFiServer(80U);
     gServer->begin();
 
     /* End of setup */
-    Serial.println("[BOOT ] System booted !");
+    *gLogger << "[BOOT ] System booted !" << endlog;
 }
 
 /* Main loop routine ----------------------------------- */
@@ -93,8 +95,7 @@ void loop(void) {
     WiFiClient lClient = gServer->available();
 
     if(0 < lClient) {
-        Serial.print("[DEBUG] New client, IP : ");
-        Serial.println(lClient.localIP());
+        *gLogger << "[DEBUG] New client, IP : " << lClient.localIP().toString() << endlog;
 
         std::string lCurrentLine = "";
         int lResult = 0;
@@ -112,23 +113,22 @@ void loop(void) {
 
         lResult = testAccept(&lClient, &lCurrentLine, &sRequest);
         if(0 != lResult) {
-            Serial.println("[ERROR] Failed to process remote request w/ testAccept !");
+            *gLogger << "[ERROR] Failed to process remote request w/ testAccept !" << endlog;
         } else {
-            Serial.println("[DEBUG] Processed testAccept successfully !");
+            *gLogger << "[DEBUG] Processed testAccept successfully !" << endlog;
         }
 
         /* Close the client when operation is done */
         sRequest = "";
         lClient.stop();
-        Serial.println("Client disconnected.");
-        Serial.println();
+        *gLogger << "Client disconnected." << endlog << endlog;
 
         /* Clear the request string */
         sRequest = "";
 
         /* Close the connection */
         lClient.stop();
-        Serial.println("[DEBUG] Request processed, disconected client.");
+        *gLogger << "[DEBUG] Request processed, disconected client." << endlog;
     }
 
     /* Check manual switch state */
@@ -142,11 +142,7 @@ void loop(void) {
 
     /* Switch the LED's state */
     if(lChangeRelayState) {
-        Serial.print("[DEBUG] Switching LED state : ");
-        if(0 == lManualSwitchState) 
-            Serial.println("OFF");
-        else
-            Serial.println("ON");
+        *gLogger << "[DEBUG] Switching LED state : " << (0 == lManualSwitchState ? "OFF" : "ON") << endlog;
         
         /* Switch Relay state */
         gRelay->switchState();

@@ -7,6 +7,8 @@
 /* Includes -------------------------------------------- */
 #include "HttpRequest.hpp"
 
+#include "Logger.hpp"
+
 #include <Arduino.h>
 
 #include <string>
@@ -18,6 +20,7 @@
 /* Type definitions ------------------------------------ */
 
 /* Variable declarations ------------------------------- */
+extern Logger *gLogger;
 
 /* Functions ------------------------------------------- */
 static void split(const std::string &pStr, const char pDelim, std::vector<std::string> &pWords) {
@@ -50,7 +53,7 @@ int HttpRequest::parseRequest(const std::string &pRequestStr) {
     std::vector<std::string> lLines;
 
     if(pRequestStr.empty()) {
-        Serial.println("[ERROR] <parseRequest> Request is empty, nothing to parse !");
+        *gLogger << "[ERROR] <parseRequest> Request is empty, nothing to parse !" << endlog;
         return -1;
     }
 

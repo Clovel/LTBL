@@ -9,10 +9,11 @@
 /* Includes -------------------------------------------- */
 #include "Relay.hpp"
 
+#include "Logger.hpp"
+
 #ifndef TESTS
 #include <Arduino.h>
 #else /* TESTS */
-#include <iostream>
 
 extern void digitalWrite(int pPin, int pLevel);
 extern void pinMode(int pPin, int pMode);
@@ -40,6 +41,7 @@ extern void pinMode(int pPin, int pMode);
 #endif /* INPUT_PULLUP */
 
 /* Variable declarations ------------------------------- */
+extern Logger *gLogger;
 
 /* Class implementation -------------------------------- */
 
@@ -59,11 +61,7 @@ namespace elec {
                 digitalWrite(mPin, HIGH);
                 break;
             default:
-#ifndef TESTS
-                Serial.println("[ERROR] Unknown Relay mode, cannot turn it off !");
-#else /* TESTS */
-                std::cout << "[ERROR] Unknown Relay mode, cannot turn it off !" << std::endl;
-#endif /* TESTS */
+                *gLogger << "[ERROR] Unknown Relay mode, cannot turn it off !" << endlog;
                 break;
         }
     }
@@ -80,13 +78,8 @@ namespace elec {
             case RELAY_MODE_INVERTED:
                 return !mState;
             default:
-#ifndef TESTS
-                Serial.println("[ERROR] Unknown relay mode, cannot know if it is on or off !");
-#else /* TESTS */
-                std::cout << "[ERROR] Unknown relay mode, cannot know if it is on or off !" << std::endl;
-#endif /* TESTS */
+                *gLogger << "[ERROR] Unknown relay mode, cannot know if it is on or off !" << endlog;
                 return false;
-                break;
         }
     }
 
@@ -115,11 +108,7 @@ namespace elec {
                 digitalWrite(mPin, LOW);
                 break;
             default:
-#ifndef TESTS
-                Serial.println("[ERROR] Unknown Relay mode, cannot turn it on !");
-#else /* TESTS */
-                std::cout << "[ERROR] Unknown Relay mode, cannot turn it on !" << std::endl;
-#endif /* TESTS */
+                *gLogger << "[ERROR] Unknown Relay mode, cannot turn it on !" << endlog;
                 break;
         }
     }
@@ -135,11 +124,7 @@ namespace elec {
                 digitalWrite(mPin, HIGH);
                 break;
             default:
-#ifndef TESTS
-                Serial.println("[ERROR] Unknown Relay mode, cannot turn it off !");
-#else /* TESTS */
-                std::cout << "[ERROR] Unknown Relay mode, cannot turn it off !" << std::endl;
-#endif /* TESTS */
+                *gLogger << "[ERROR] Unknown Relay mode, cannot turn it off !" << endlog;
                 break;
         }
     }
@@ -151,11 +136,6 @@ namespace elec {
         mState = !mState;
         digitalWrite(mPin, mState);
 
-#ifndef TESTS
-        Serial.print("[DEBUG] <Relay::switchState> Switching to ");
-        Serial.println(mState);
-#else /* TESTS */
-        std::cout << "[DEBUG] <Relay::switchState> Switching to " << mState << std::endl;
-#endif /* TESTS */
+        *gLogger << "[DEBUG] <Relay::switchState> Switching to " << mState << endlog;
     }
 }

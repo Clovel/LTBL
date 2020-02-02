@@ -10,6 +10,8 @@
 #include "webtools.hpp"
 #include "HttpRequest.hpp"
 
+#include "Logger.hpp"
+
 /* ESP includes */
 #include <ESP8266WiFi.h>
 
@@ -18,6 +20,7 @@
 
 /* Variable declarations ------------------------------- */
 extern elec::Relay *gRelay;
+extern Logger *gLogger;
 
 /* Forward declaration of private functions ------------ */
 int htmlSend(WiFiClient * const pClient, const char * const pStr);
@@ -42,8 +45,7 @@ void togglePage(WiFiClient * const pClient);
 int htmlSend(WiFiClient * const pClient, const char * const pStr) {
     int lResult = pClient->write(pStr, strlen(pStr));
     if(0 > lResult) {
-        Serial.print("[ERROR] <htmlSend> write failed with error code ");
-        Serial.println(lResult);
+        *gLogger << "[ERROR] <htmlSend> write failed with error code " << lResult << endlog;
     }
 
     return lResult;
@@ -52,8 +54,7 @@ int htmlSend(WiFiClient * const pClient, const char * const pStr) {
 int htmlSend(WiFiClient * const pClient, const std::string pStr) {
     int lResult = pClient->write(pStr.c_str(), pStr.length());
     if(0 > lResult) {
-        Serial.print("[ERROR] <htmlSend> write failed with error code ");
-        Serial.println(lResult);
+        *gLogger << "[ERROR] <htmlSend> write failed with error code " << lResult << endlog;
     }
 
     return lResult;
@@ -92,10 +93,10 @@ int getLine(WiFiClient * const pClient, char *pBuf, int pSize)
 
         /* Check lReadChars */
         if(0 > lReadChars) {
-            Serial.println("[ERROR] <getLine> recv failed !");
+            *gLogger << "[ERROR] <getLine> recv failed !" << endlog;
             return -1;
         } else if (0 == lReadChars) {
-            //Serial.println("[WARN ] <getLine> Unexpected behavior, read 0 chars from socket but no errors...");
+            //*gLogger << "[WARN ] <getLine> Unexpected behavior, read 0 chars from socket but no errors..." << endlog;
             /* The socket buffer is empty, return */
             break;
         }
@@ -111,7 +112,7 @@ int getLine(WiFiClient * const pClient, char *pBuf, int pSize)
         if('\r' == lChar) {
             lGotCR = true;
             /* e expect to get a LF afterwards */
-            //Serial.println("[DEBUG] <getLine> Got CR, expecting an LF...");
+            //*gLogger << "[DEBUG] <getLine> Got CR, expecting an LF..." << endlog;
         }
 
         /** Check the character for LF 
@@ -119,15 +120,15 @@ int getLine(WiFiClient * const pClient, char *pBuf, int pSize)
          */
         if('\n' == lChar) {
             if(!lGotCR) {
-                Serial.println("[WARN ] <getLine> Got LF without CR, doesn't comply with HTTP protocols !");
+                *gLogger << "[WARN ] <getLine> Got LF without CR, doesn't comply with HTTP protocols !" << endlog;
             } else {
-                //Serial.println("[DEBUG] <getLine> Got LF after CR !");
+                //*gLogger << "[DEBUG] <getLine> Got LF after CR !" << endlog;
             }
             break;
         }
 
         if('\0' == lChar) {
-            //Serial.println("[DEBUG] <getLine> Got \\0, exiting...");
+            //*gLogger << "[DEBUG] <getLine> Got \\0, exiting..." << endlog;
             break;
         }
 
@@ -239,8 +240,7 @@ void unimplemented(WiFiClient * const pClient)
     
     const int lResult = htmlSend(pClient, lUnimplemented);
     if(0 > lResult) {
-        Serial.print("[ERROR] <unimplemented> htmlSend failed with return code ");
-        Serial.println(lResult);
+        *gLogger << "[ERROR] <unimplemented> htmlSend failed with return code " << lResult << endlog;
     }
 }
 
@@ -265,8 +265,7 @@ void badRequest(WiFiClient * const pClient)
 
     const int lResult = htmlSend(pClient, lBadReq);
     if(0 > lResult) {
-        Serial.print("[ERROR] <badRequest> htmlSend failed with return code ");
-        Serial.println(lResult);
+        *gLogger << "[ERROR] <badRequest> htmlSend failed with return code " << lResult << endlog;
     }
 }
 
@@ -290,8 +289,7 @@ void cannotExecute(WiFiClient * const pClient)
 
     const int lResult = htmlSend(pClient, lExeError);
     if(0 > lResult) {
-        Serial.print("[ERROR] <cannotExecute> htmlSend failed with return code ");
-        Serial.println(lResult);
+        *gLogger << "[ERROR] <cannotExecute> htmlSend failed with return code " << lResult << endlog;
     }
 }
 
@@ -308,8 +306,7 @@ void headers(WiFiClient * const pClient, const char * const pFileName)
 
     const int lResult = htmlSend(pClient, lHeader);
     if(0 > lResult) {
-        Serial.print("[ERROR] <headers> htmlSend failed with return code ");
-        Serial.println(lResult);
+        *gLogger << "[ERROR] <headers> htmlSend failed with return code " << lResult << endlog;
     }
 }
 
@@ -335,8 +332,7 @@ void notFound(WiFiClient * const pClient)
 
     const int lResult = htmlSend(pClient, l404);
     if(0 > lResult) {
-        Serial.print("[ERROR] <notFound> htmlSend failed with return code ");
-        Serial.println(lResult);
+        *gLogger << "[ERROR] <notFound> htmlSend failed with return code " << lResult << endlog;
     }
 }
 
@@ -359,8 +355,7 @@ void home(WiFiClient * const pClient) {
 
     const int lResult = htmlSend(pClient, lHome);
     if(0 > lResult) {
-        Serial.print("[ERROR] <home> htmlSend failed with return code ");
-        Serial.println(lResult);
+        *gLogger << "[ERROR] <home> htmlSend failed with return code " << lResult << endlog;
     }
 }
 
@@ -385,15 +380,14 @@ void togglePage(WiFiClient * const pClient) {
     "    </body>\r\n"
     "</html>\r\n\r\n";
 
-    Serial.println("[DEBUG] Sending the toggle page code !");
+    *gLogger << "[DEBUG] Sending the toggle page code !" << endlog;
+    *gLogger << "[DEBUG] Sending the toggle page code !" << endlog;
 
     const int lResult = htmlSend(pClient, lTogglePage);
     if(0 > lResult) {
-        Serial.print("[ERROR] <togglePage> htmlSend failed with return code ");
-        Serial.println(lResult);
+        *gLogger << "[ERROR] <togglePage> htmlSend failed with return code " << lResult << endlog;
     } else {
-        // Serial.println("[DEBUG] <togglePage> Toggle page code sent : ");
-        // Serial.println(lTogglePage.c_str());
+        *gLogger << "[DEBUG] <togglePage> Toggle page code sent : " << lTogglePage.c_str() << endlog;
     }
 }
 
@@ -404,7 +398,7 @@ void togglePage(WiFiClient * const pClient) {
 /**********************************************************************/
 int acceptRequest(WiFiClient * const pClient) {
     if(nullptr == pClient) {
-        Serial.println("[ERROR] Client is a nullptr !");
+        *gLogger << "[ERROR] Client is a nullptr !" << endlog;
         return -1;
     }
 
@@ -426,17 +420,15 @@ int acceptRequest(WiFiClient * const pClient) {
         //std::cout << "[DEBUG] <acceptRequest> Got \"" << std::string(lBuf) << "\" from the client. " << std::endl;
 
         if(0 > lNumChars) {
-            Serial.print("[ERROR] <acceptRequest> getLine failed, returned ");
-            Serial.println(lNumChars);
+            *gLogger << "[ERROR] <acceptRequest> getLine failed, returned " << lNumChars << endlog;
             pClient->stop();
             return -1;
         } else if(0 == lNumChars) {
-            Serial.println("[WARN ] <acceptRequest> Read 0 characters !");
+            *gLogger << "[WARN ] <acceptRequest> Read 0 characters !" << endlog;
         } else if(std::string(lBuf).empty()) {
-            Serial.println("[WARN ] <acceptRequest> Got an empty line !");
+            *gLogger << "[WARN ] <acceptRequest> Got an empty line !" << endlog;
             if(lNumChars) {
-                Serial.print("[ERROR] <acceptRequest> Got an empty line, but lNumChars = ");
-                Serial.println(lNumChars);
+                *gLogger << "[ERROR] <acceptRequest> Got an empty line, but lNumChars = " << lNumChars << endlog;
                 pClient->stop();
                 return -1;
             }
@@ -447,11 +439,9 @@ int acceptRequest(WiFiClient * const pClient) {
     } while(0 < lNumChars);
     
     /* Print out what we received */
-    Serial.print("[DEBUG] <acceptRequest> lRequestStr = \"");
-    Serial.print(lRequestStr.c_str());
-    Serial.println("\"");
+    *gLogger << "[DEBUG] <acceptRequest> lRequestStr = \"" << lRequestStr.c_str() << "\"" << endlog;
     if(lRequestStr.empty()) {
-        Serial.println("[WARN ] Got an empty request, exiting...");
+        *gLogger << "[WARN ] Got an empty request, exiting..." << endlog;
         pClient->stop();
         return -1;
     }
@@ -459,23 +449,19 @@ int acceptRequest(WiFiClient * const pClient) {
 
     /* Get the method from the client's request */
     std::string lMethod = lRequest.method();
-    Serial.print("[DEBUG] <acceptRequest> The method is ");
-    Serial.println(lMethod.c_str());
+    *gLogger << "[DEBUG] <acceptRequest> The method is " << lMethod.c_str() << endlog;
 
     /* Get the URL of the request from the client's request */
-    Serial.print("[DEBUG] <acceptRequest> The method is ");
-    Serial.println(lRequest.URL().c_str());
-    Serial.print("[DEBUG] <acceptRequest> The short URL is    : ");
-    Serial.println(lRequest.shortURL().c_str());
+    *gLogger << "[DEBUG] <acceptRequest> The requested URL is : " << lRequest.URL().c_str() << endlog;
+    *gLogger << "[DEBUG] <acceptRequest> The short URL is     : " << lRequest.shortURL().c_str() << endlog;
     std::string lURL = lRequest.shortURL();
 
     /* The real query is located after the "?" symbol */
     std::string lQuery = lRequest.query();
     if(lQuery.empty()) {
-        Serial.println("[DEBUG] <acceptRequest> No query found.");
+        *gLogger << "[DEBUG] <acceptRequest> No query found." << endlog;
     } else {
-        Serial.print("[DEBUG] <acceptRequest> The query is ");
-        Serial.println(lQuery.c_str());
+        *gLogger << "[DEBUG] <acceptRequest> The query is " << lQuery.c_str() << endlog;
     }
 
     /* What method is it ? */
@@ -496,14 +482,14 @@ int acceptRequest(WiFiClient * const pClient) {
         lREST = REST_OPTIONS;
     } else {
         unimplemented(pClient);
-        Serial.println("[ERROR] <acceptRequest> Unknown REST method requested ! ");
+        *gLogger << "[ERROR] <acceptRequest> Unknown REST method requested ! " << endlog;
         pClient->stop();
         return -1;
     }
 
     switch(lREST) {
         case REST_GET:
-            Serial.println("[DEBUG] <acceptRequest> Request is GET");
+            *gLogger << "[DEBUG] <acceptRequest> Request is GET" << endlog;
 
             /* What is the URL ? */
             if("/" == lURL || "/index.html" == lURL) {
@@ -514,14 +500,14 @@ int acceptRequest(WiFiClient * const pClient) {
 
                 /* Check the relay's state, print it out */
                 if(gRelay->isOn()) {
-                    Serial.println("[DEBUG] <acceptRequest> Toggled relay, is now ON");
+                    *gLogger << "[DEBUG] <acceptRequest> Toggled relay, is now ON" << endlog;
                 } else {
-                    Serial.println("[DEBUG] <acceptRequest> Toggled relay, is now OFF");
+                    *gLogger << "[DEBUG] <acceptRequest> Toggled relay, is now OFF" << endlog;
                 }
             } else {
                 /* Unimplemented */
                 notFound(pClient);
-                Serial.println("[ERROR] Unknown URL requested !");
+                *gLogger << "[ERROR] Unknown URL requested !" << endlog;
                 pClient->stop();
                 return -1;
             }
@@ -530,23 +516,23 @@ int acceptRequest(WiFiClient * const pClient) {
             togglePage(pClient);
             break;
         case REST_POST:
-            Serial.println("[DEBUG] <acceptRequest> Request is POST");
+            *gLogger << "[DEBUG] <acceptRequest> Request is POST" << endlog;
             unimplemented(pClient);
             pClient->stop();
             return -1;
             break;
         case REST_INDEX:
-            Serial.println("[DEBUG] <acceptRequest> Request is INDEX");
+            *gLogger << "[DEBUG] <acceptRequest> Request is INDEX" << endlog;
             home(pClient);
             break;
         case REST_PUT:
-            Serial.println("[DEBUG] <acceptRequest> Request is PUT");
+            *gLogger << "[DEBUG] <acceptRequest> Request is PUT" << endlog;
             unimplemented(pClient);
             pClient->stop();
             return -1;
         case REST_UNKNOWN:
         default:
-            Serial.println("[ERROR] <acceptRequest> Request is unknown");
+            *gLogger << "[ERROR] <acceptRequest> Request is unknown" << endlog;
             unimplemented(pClient);
             pClient->stop();
             return -1;
@@ -568,17 +554,17 @@ int testAccept(WiFiClient * const pClient,
     std::string * const pHeader)
 {
     if(nullptr == pClient) {
-        Serial.println("[ERROR] pClient is a nullptr !");
+        *gLogger << "[ERROR] pClient is a nullptr !" << endlog;
         return -1;
     }
 
     if(nullptr == pCurrentLine) {
-        Serial.println("[ERROR] pCurrentLine is a nullptr !");
+        *gLogger << "[ERROR] pCurrentLine is a nullptr !" << endlog;
         return -1;
     }
 
     if(nullptr == pHeader) {
-        Serial.println("[ERROR] pHeader is a nullptr !");
+        *gLogger << "[ERROR] pHeader is a nullptr !" << endlog;
         return -1;
     }
 
@@ -590,7 +576,7 @@ int testAccept(WiFiClient * const pClient,
             const char lChar = pClient->read();
 
             /* Print the char out the serial port */
-            Serial.write(lChar);
+            *gLogger << lChar;
 
             /* Add the char to the header */
             *pHeader += lChar;
@@ -622,10 +608,10 @@ int testAccept(WiFiClient * const pClient,
 
                     /* Turn the relay ON or OFF */
                     if (String(pHeader->c_str()).indexOf("GET /5/on") >= 0) {
-                        Serial.println("Relay ON");
+                        *gLogger << "Relay ON" << endlog;
                         gRelay->turnOn();
                     } else if (String(pHeader->c_str()).indexOf("GET /5/off") >= 0) {
-                        Serial.println("Relay OFF");
+                        *gLogger << "Relay OFF" << endlog;
                         gRelay->turnOff();
                     }
 

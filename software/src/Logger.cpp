@@ -107,9 +107,9 @@ Logger::~Logger() {
 
 /* Instance getter */
 Logger &Logger::instance(void) {
-    static Logger sLogger;
+    static Logger gLogger;
 
-    if(!sLogger.mInitialized) {
+    if(!gLogger.mInitialized) {
 #ifdef ESP8266_NODEMCU
         Serial.begin(LOG_BAUDRATE);
 
@@ -117,10 +117,10 @@ Logger &Logger::instance(void) {
         while(!Serial);
 #endif /* ESP8266_NODEMCU */
 
-        sLogger.mInitialized = true;
+        gLogger.mInitialized = true;
     }
 
-    return sLogger;
+    return gLogger;
 }
 
 /* Getters */
