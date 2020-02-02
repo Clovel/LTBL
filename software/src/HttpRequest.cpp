@@ -9,8 +9,6 @@
 
 #include "Logger.hpp"
 
-#include <Arduino.h>
-
 #include <string>
 #include <vector>
 #include <sstream>
