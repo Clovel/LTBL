@@ -22,11 +22,34 @@ extern Logger *gLogger;
 
 /* Functions ------------------------------------------- */
 static void split(const std::string &pStr, const char pDelim, std::vector<std::string> &pWords) {
-    std::stringstream lStringStream(pStr);
-    std::string lWord;
+    size_t lPos = 0U, lOldPos = 0U;
+    while(std::string::npos != lPos) {
+        std::string lSub;
 
-    while (getline(lStringStream, lWord, pDelim)) {
-        pWords.push_back(lWord);
+        /* Save the old position in the string */
+        lOldPos = ++lPos;
+
+        /* Find the position of the next '\n' */
+        *gLogger << "[DEBUG] <split> Find the position of the next 'pDelim'" << endlog;
+        lPos = pStr.find(pDelim, lPos);
+
+        if(std::string::npos == lPos) {
+            *gLogger << "[DEBUG] <split> lPos == npos" << endlog;
+            break;
+        }
+
+        /* Extract the substring (lSub) */
+        *gLogger << "[DEBUG] <split> Extract the substring (lSub)" << endlog;
+        lSub = pStr.substr(lOldPos, lPos - lOldPos);
+
+        *gLogger << "[DEBUG] <split> lSub = " << lSub << endlog;
+
+        if(lSub.empty()) {
+            *gLogger << "[DEBUG] <split> lSub.empty()" << endlog;
+            break;
+        }
+
+        pWords.push_back(lSub);
     }
 }
 
