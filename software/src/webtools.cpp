@@ -513,6 +513,37 @@ int acceptRequest(WiFiClient * const pClient) {
     return 0;
 }
 
+int sendTogglePage(WiFiClient &pClient, const HttpRequest &pRequest) {
+    /** HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
+     * and a content-type so the client knows what's coming, then a blank line
+     */
+    (void)htmlSend(&pClient, htmlResponseCode200);
+
+    /* Display the HTML web page */
+    (void)htmlSend(&pClient, htmlDocType);
+    (void)htmlSend(&pClient, htmlPageBegin);
+    (void)htmlSend(&pClient, htmlHead);
+
+    /* Turn the relay ON or OFF */
+    if (pRequest.URL.find("/on") != std::string::npos) {
+        *gLogger << "Relay ON" << endlog;
+        gRelay->turnOn();
+    } else if (pRequest.URL.find("/off") != std::string::npos) {
+        *gLogger << "Relay OFF" << endlog;
+        gRelay->turnOff();
+    } else if (String(pRequest.URL.c_str()).indexOf("/") >= 0) {
+        *gLogger << "Get Relay state" << endlog;
+    }
+
+    /* Toggle web page */
+    togglePage2(&pClient);
+
+    /* End the web page */
+    htmlSend(&pClient, htmlPageEnd);
+
+    return 0;
+}
+
 /**********************************************************************/
 /* A test function given as an example by 
  * https://randomnerdtutorials.com/wifimanager-with-esp8266-autoconnect-custom-parameter-and-manage-your-ssid-and-password/ */
@@ -538,6 +569,7 @@ int testAccept(WiFiClient * const pClient,
 
     std::string lReceivedStr;
     HttpRequest lRequest;
+    int lErrorCode = 0;
     // size_t lSentBytes = 0U;
 
     /* Loop while the client is still connected */
@@ -561,36 +593,24 @@ int testAccept(WiFiClient * const pClient,
                      * 
                      * Everything is stored in the pHeader variable;
                      */
-                    if(0 != lRequest.parseRequest(*pHeader)) {
-                        *gLogger << "[ERROR] <testAccept> parseRequest failed !" << endlog;
+                    httpRequestParseError_t lParseError = lRequest.parseRequest(*pHeader);
+                    switch(lParseError) {
+                        case HTTP_REQ_PARSE_ERROR_NONE:
+                            lErrorCode = sendTogglePage(*pClient, lRequest);
+                            break;
+                        case HTTP_REQ_PARSE_ERROR_METHOD:
+                            unimplemented(pClient);
+                            lErrorCode = 1;
+                            break;
+                        case HTTP_REQ_PARSE_ERROR_CONTENTS:
+                            badRequest(pClient);
+                            lErrorCode = 1;
+                            break;
+                        default:
+                            *gLogger << "[ERROR] <testAccept> parseRequest failed w/ error " << (unsigned int)lParseError << endlog;
+                            lErrorCode = 1;
+                            break;
                     }
-
-                    /** HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
-                     * and a content-type so the client knows what's coming, then a blank line
-                     */
-                    (void)htmlSend(pClient, htmlResponseCode200);
-
-                    /* Display the HTML web page */
-                    (void)htmlSend(pClient, htmlDocType);
-                    (void)htmlSend(pClient, htmlPageBegin);
-                    (void)htmlSend(pClient, htmlHead);
-
-                    /* Turn the relay ON or OFF */
-                    if (pHeader->find("GET /on") != std::string::npos) {
-                        *gLogger << "Relay ON" << endlog;
-                        gRelay->turnOn();
-                    } else if (pHeader->find("GET /off") != std::string::npos) {
-                        *gLogger << "Relay OFF" << endlog;
-                        gRelay->turnOff();
-                    } else if (String(pHeader->c_str()).indexOf("GET /") >= 0) {
-                        *gLogger << "Get Relay state" << endlog;
-                    }
-
-                    /* Toggle web page */
-                    togglePage2(pClient);
-
-                    /* End the web page */
-                    htmlSend(pClient, htmlPageEnd);
 
                     /* Break the while loop now that we sent the response */
                     break;
@@ -614,5 +634,5 @@ int testAccept(WiFiClient * const pClient,
     pClient->stop();
     *gLogger << "[INFO ] <testAccept> Client disconnected." << endlog;
 
-    return 0;
+    return lErrorCode;
 }
