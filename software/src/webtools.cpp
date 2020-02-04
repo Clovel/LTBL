@@ -537,6 +537,7 @@ int testAccept(WiFiClient * const pClient,
     }
 
     std::string lReceivedStr;
+    HttpRequest lRequest;
     // size_t lSentBytes = 0U;
 
     /* Loop while the client is still connected */
@@ -558,6 +559,15 @@ int testAccept(WiFiClient * const pClient,
                  * that's the end of the client HTTP request, so send a response
                  */
                 if(0 == pCurrentLine->length()) {
+                    /* At this point, we have recieved the HTTP request,
+                     * so we can analyse it and decide what tot do.
+                     * 
+                     * Everything is stored in the pHeader variable;
+                     */
+                    if(0 != lRequest.parseRequest(*pHeader)) {
+                        *gLogger << "[ERROR] <testAccept> parseRequest failed !" << endlog;
+                    }
+
                     /** HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
                      * and a content-type so the client knows what's coming, then a blank line
                      */
