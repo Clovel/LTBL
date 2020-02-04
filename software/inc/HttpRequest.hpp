@@ -49,7 +49,8 @@ class HttpRequest {
 
         /* Getters */
         std::string request(void) const;
-        std::string method(void) const;
+        restMethod_t method(void) const;
+        std::string methodStr(void) const;
         std::string URL(void) const;
         std::string shortURL(void) const;
         std::string query(void) const;
@@ -61,7 +62,8 @@ class HttpRequest {
     protected:
         std::string mRequestStr;
         
-        std::string mMethod;
+        restMethod_t mMethod;
+        std::string mMethodStr;
         std::string mURL;
         std::string mShortURL;
         std::string mQuery;

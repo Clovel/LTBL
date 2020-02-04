@@ -150,8 +150,29 @@ httpRequestParseError_t HttpRequest::parseRequest(const std::string &pRequestStr
             *gLogger << "[ERROR] <parseRequest> Failed to parse Method, URL & HTTP version" << endlog;
             return HTTP_REQ_PARSE_ERROR_CONTENTS;
         }
-        
-        mMethod         = lWords[0U];
+
+        mMethodStr = lWords[0U];
+        /* What method is it ? */
+        restMethod_t lREST = REST_UNKNOWN;
+        if(0 == strcasecmp("GET", mMethodStr.c_str())) {
+            mMethod = REST_GET;
+        } else if (0 == strcasecmp("POST", mMethodStr.c_str())) {
+            mMethod = REST_POST;
+        } else if (0 == strcasecmp("PUT", mMethodStr.c_str())) {
+            mMethod = REST_PUT;
+        } else if (0 == strcasecmp("HEAD", mMethodStr.c_str())) {
+            mMethod = REST_HEAD;
+        } else if (0 == strcasecmp("DELETE", mMethodStr.c_str())) {
+            mMethod = REST_DELETE;
+        } else if (0 == strcasecmp("PATCH", mMethodStr.c_str())) {
+            mMethod = REST_PATCH;
+        } else if (0 == strcasecmp("OPTIONS", mMethodStr.c_str())) {
+            mMethod = REST_OPTIONS;
+        } else {
+            *gLogger << "[ERROR] <parseRequest> Unknown REST method requested ! " << endlog;
+            return HTTP_REQ_PARSE_ERROR_METHOD;
+        }
+
         mURL            = lWords[1U];
         mHttpVersion    = lWords[2U];
 
@@ -210,8 +231,12 @@ std::string HttpRequest::request(void) const {
     return mRequestStr;
 }
 
-std::string HttpRequest::method(void) const {
+restMethod_t HttpRequest::method(void) const {
     return mMethod;
+}
+
+std::string HttpRequest::methodStr(void) const {
+    return mMethodStr;
 }
 
 std::string HttpRequest::URL(void) const {

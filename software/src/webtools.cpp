@@ -416,7 +416,7 @@ int acceptRequest(WiFiClient * const pClient) {
     lRequest.parseRequest(lRequestStr);
 
     /* Get the method from the client's request */
-    std::string lMethod = lRequest.method();
+    std::string lMethod = lRequest.methodStr();
     *gLogger << "[DEBUG] <acceptRequest> The method is " << lMethod.c_str() << endlog;
 
     /* Get the URL of the request from the client's request */
