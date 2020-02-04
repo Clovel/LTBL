@@ -75,26 +75,23 @@ int HttpRequest::parseRequest(const std::string &pRequestStr) {
     /* Set full request in class */
     mRequestStr = pRequestStr;
 
-    std::istringstream lStrStream(pRequestStr);
-    std::string lLine;
+    lLines = split(pRequestStr, '\n');
 
-    while (std::getline(lStrStream, lLine)) {
-        if(lLine.empty()) {
-            break;
-        }
-
-        // Serial.print("[DEBUG] <HttpRequest::parseRequest> line n°");
-        // Serial.print(lLines.size() + 1U);
-        // Serial.print(" = ");
-        // Serial.println(lLine.c_str());
-
-        lLines.push_back(lLine);
+    if(lLines.empty()) {
+        /* Got nothing, returning error */
+        *gLogger << "[ERROR] <parseRequest> Got 0 lines when parsing." << endlog;
+        return 1;
     }
 
     /* Get Method, URL & HTTP version */
     {
-        std::vector<std::string> lWords = split(lLines[0], ' ');
+        std::vector<std::string> lWords = split(lLines[0U], ' ');
 
+        if(3U != lWords.size()) {
+            *gLogger << "[ERROR] <parseRequest> Failed to parse Method, URL & HTTP version" << endlog;
+            return 1;
+        }
+        
         mMethod         = lWords[0U];
         mURL            = lWords[1U];
         mHttpVersion    = lWords[2U];
@@ -106,16 +103,6 @@ int HttpRequest::parseRequest(const std::string &pRequestStr) {
             mShortURL = mURL;
         }
 
-        /* Print result for debugging purposes */
-        /*
-        std::cout << "[DEBUG] <HttpRequest::parseRequest> Line 1 : " << std::endl
-            << "Method       : " << mMethod << std::endl
-            << "URL          : " << mURL << std::endl
-            << "Short URL    : " << mShortURL << std::endl
-            << "Query        : " << mQuery << std::endl
-            << "HTTP Version : " << mHttpVersion << std::endl
-            << std::endl;
-        */
     }
 
     return 0;
