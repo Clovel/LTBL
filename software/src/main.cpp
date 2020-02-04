@@ -64,6 +64,9 @@ void setup(void) {
      * and enters Access Point mode */
     gWiFiMgr->setAPCallback(configModeCallback);
 
+    /* Disable debug mode for the WiFiManager */
+    gWiFiMgr->setDebugOutput(false);
+
     /** Fetches SSID and password and tries to connect
      * if it does not connect it starts an access point with the specified name
      * (defined here by AP_PASSWD)
