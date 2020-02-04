@@ -29,7 +29,7 @@ static size_t print(const T &pArg, const int8_t &pFormat = -1, const size_t &pSi
     size_t lSize = 0U;
 
 #ifdef ESP8266_NODEMCU
-    lSize = Serial.print(*pArg);
+    lSize = Serial.print(pArg);
 #endif /* ESP8266_NODEMCU */
 
 #ifdef UNIX
@@ -49,7 +49,7 @@ static size_t println(const T &pArg, const int8_t &pFormat = -1, const size_t &p
     size_t lSize = 0U;
 
 #ifdef ESP8266_NODEMCU
-    lSize = Serial.println(*pArg);
+    lSize = Serial.println(pArg);
 #endif /* ESP8266_NODEMCU */
 
 #ifdef UNIX
@@ -145,7 +145,7 @@ Logger &Logger::operator<<(const String &pArg)
 {
     if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
-        print(&pArg);
+        print(pArg);
     }
     
     return *this;
@@ -176,7 +176,7 @@ Logger &Logger::operator<<(const char &pArg)
 {
     if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
-        print(&pArg);
+        print(pArg);
     }
     
     return *this;
@@ -187,9 +187,9 @@ Logger &Logger::operator<<(const unsigned char &pArg)
     if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            print(&pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            print(&pArg); /* DEC */
+            print(pArg); /* DEC */
         }
     }
     
@@ -201,9 +201,9 @@ Logger &Logger::operator<<(const int &pArg)
     if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            print(&pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            print(&pArg); /* DEC */
+            print(pArg); /* DEC */
         }
     }
     
@@ -215,9 +215,9 @@ Logger &Logger::operator<<(const unsigned int &pArg)
     if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            print(&pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            print(&pArg); /* DEC */
+            print(pArg); /* DEC */
         }
     }
     
@@ -229,9 +229,9 @@ Logger &Logger::operator<<(const long &pArg)
     if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            print(&pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            print(&pArg); /* DEC */
+            print(pArg); /* DEC */
         }
     }
     
@@ -243,9 +243,9 @@ Logger &Logger::operator<<(const unsigned long &pArg)
     if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            print(&pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            print(&pArg); /* DEC */
+            print(pArg); /* DEC */
         }
     }
     
@@ -257,9 +257,9 @@ Logger &Logger::operator<<(const double &pArg)
     if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            print(&pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            print(&pArg); /* BIN */
+            print(pArg); /* BIN */
         }
     }
     
@@ -271,9 +271,9 @@ Logger &Logger::operator<<(const float &pArg)
     if (mCurrentLogLevel > LOG_MIN &&
         mLogLevel >= mCurrentLogLevel) {
         if (mFormat > 0) {
-            print(&pArg, mFormat);
+            print(pArg, mFormat);
         } else {
-            print(&pArg); /* BIN */
+            print(pArg); /* BIN */
         }
     }
     
