@@ -91,23 +91,23 @@ class Logger {
 
         /* Public operators */
 #ifndef TESTS
-        Logger& operator<<(const String &pArg);
+        Logger &operator<<(const String &pArg);
 #endif /* TESTS */
-        Logger& operator<<(const std::string &pArg);
-        Logger& operator<<(const char * const pArg);
-        Logger& operator<<(const char &pArg);
-        Logger& operator<<(const unsigned char &pArg);
-        Logger& operator<<(const int &pArg);
-        Logger& operator<<(const unsigned int &pArg);
-        Logger& operator<<(const long &pArg);
-        Logger& operator<<(const unsigned long &pArg);
-        Logger& operator<<(const double &pArg);
-        Logger& operator<<(const float &pArg);
+        Logger &operator<<(const std::string &pArg);
+        Logger &operator<<(const char * const pArg);
+        Logger &operator<<(const char &pArg);
+        Logger &operator<<(const unsigned char &pArg);
+        Logger &operator<<(const int &pArg);
+        Logger &operator<<(const unsigned int &pArg);
+        Logger &operator<<(const long &pArg);
+        Logger &operator<<(const unsigned long &pArg);
+        Logger &operator<<(const double &pArg);
+        Logger &operator<<(const float &pArg);
     
-        Logger& operator<<(const LogLevel &pArg);
-        Logger& operator<<(const EndLog &pArg);
-        Logger& operator<<(const FlushLog &pArg);
-        Logger& operator<<(const Format &pArg);
+        Logger &operator<<(const LogLevel &pArg);
+        Logger &operator<<(const EndLog &pArg);
+        Logger &operator<<(const FlushLog &pArg);
+        Logger &operator<<(const Format &pArg);
 
         /* alternative to << loglevel(value) */
         inline Logger &log(const uint8_t &pLogLevel = LOG_DEFAULT);
