@@ -547,9 +547,6 @@ int testAccept(WiFiClient * const pClient,
             /* Read a byte */
             const char lChar = pClient->read();
 
-            /* Print the char out the serial port */
-            *gLogger << lChar;
-
             /* Add the char to the header */
             *pHeader += lChar;
 
