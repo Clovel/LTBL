@@ -120,12 +120,12 @@ HttpRequest::~HttpRequest() {
     /* Empty */
 }
 
-int HttpRequest::parseRequest(const std::string &pRequestStr) {
+httpRequestParseError_t HttpRequest::parseRequest(const std::string &pRequestStr) {
     std::vector<std::string> lLines;
 
     if(pRequestStr.empty()) {
         *gLogger << "[ERROR] <parseRequest> Request is empty, nothing to parse !" << endlog;
-        return -1;
+        return HTTP_REQ_PARSE_ERROR_CONTENTS;
     }
 
     /* Set full request in class */
@@ -139,7 +139,7 @@ int HttpRequest::parseRequest(const std::string &pRequestStr) {
     if(lLines.empty()) {
         /* Got nothing, returning error */
         *gLogger << "[ERROR] <parseRequest> Got 0 lines when parsing." << endlog;
-        return 1;
+        return HTTP_REQ_PARSE_ERROR_CONTENTS;
     }
 
     /* Get Method, URL & HTTP version */
@@ -148,7 +148,7 @@ int HttpRequest::parseRequest(const std::string &pRequestStr) {
 
         if(3U != lWords.size()) {
             *gLogger << "[ERROR] <parseRequest> Failed to parse Method, URL & HTTP version" << endlog;
-            return 1;
+            return HTTP_REQ_PARSE_ERROR_CONTENTS;
         }
         
         mMethod         = lWords[0U];
@@ -202,7 +202,7 @@ int HttpRequest::parseRequest(const std::string &pRequestStr) {
         }
     }
 
-    return 0;
+    return HTTP_REQ_PARSE_ERROR_NONE;
 }
 
 /* Getters */

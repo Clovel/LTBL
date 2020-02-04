@@ -25,6 +25,12 @@ typedef enum _restMethods {
     REST_OPTIONS /* The OPTIONS method describes the communication options for the target resource. */
 } restMethod_t;
 
+typedef enum _parseErrors {
+    HTTP_REQ_PARSE_ERROR_NONE = 0U,
+    HTTP_REQ_PARSE_ERROR_METHOD,        /* Unknown REST method */
+    HTTP_REQ_PARSE_ERROR_CONTENTS,      /*! Contents of the parsed requests are non-compliant */
+} httpRequestParseError_t;
+
 /* Variable declarations ------------------------------- */
 
 /* Functions ------------------------------------------- */
@@ -39,7 +45,7 @@ class HttpRequest {
         virtual ~HttpRequest();
 
         /* Request parser */
-        int parseRequest(const std::string &pRequest);
+        httpRequestParseError_t parseRequest(const std::string &pRequest);
 
         /* Getters */
         std::string request(void) const;
