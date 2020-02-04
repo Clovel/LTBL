@@ -118,17 +118,8 @@ void loop(void) {
             *gLogger << "[DEBUG] Processed testAccept successfully !" << endlog;
         }
 
-        /* Close the client when operation is done */
-        sRequest = "";
-        lClient.stop();
-        *gLogger << "Client disconnected." << endlog << endlog;
-
         /* Clear the request string */
         sRequest = "";
-
-        /* Close the connection */
-        lClient.stop();
-        *gLogger << "[DEBUG] Request processed, disconected client." << endlog;
     }
 
     /* Check manual switch state */
