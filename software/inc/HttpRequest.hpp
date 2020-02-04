@@ -46,5 +46,13 @@ class HttpRequest {
         std::string mShortURL;
         std::string mQuery;
         std::string mHttpVersion;
+
+        std::string mHost;
+        std::string mConnectionType;
+        unsigned int mUpgradeInsecureRequests;
+        std::string mAccept;
+        std::string mUserAgent;
+        std::string mAccpetLanguage;
+        std::string mAccpetEncoding;
     private:
 };
