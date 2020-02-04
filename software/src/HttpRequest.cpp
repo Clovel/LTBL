@@ -27,25 +27,19 @@ static void split(const std::string &pStr, const char pDelim, std::vector<std::s
         std::string lSub;
 
         /* Save the old position in the string */
-        lOldPos = ++lPos;
+        lOldPos = lPos;
 
         /* Find the position of the next '\n' */
-        *gLogger << "[DEBUG] <split> Find the position of the next 'pDelim'" << endlog;
         lPos = pStr.find(pDelim, lPos);
-
-        if(std::string::npos == lPos) {
-            *gLogger << "[DEBUG] <split> lPos == npos" << endlog;
-            break;
+        
+        if(std::string::npos != lPos) {
+            ++lPos;
         }
 
         /* Extract the substring (lSub) */
-        *gLogger << "[DEBUG] <split> Extract the substring (lSub)" << endlog;
         lSub = pStr.substr(lOldPos, lPos - lOldPos);
 
-        *gLogger << "[DEBUG] <split> lSub = " << lSub << endlog;
-
         if(lSub.empty()) {
-            *gLogger << "[DEBUG] <split> lSub.empty()" << endlog;
             break;
         }
 
