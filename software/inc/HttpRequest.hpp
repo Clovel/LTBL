@@ -4,6 +4,9 @@
  * @file HttpRequest.hpp
  */
 
+#ifndef HTTP_REQUEST_HPP
+#define HTTP_REQUEST_HPP
+
 /* Includes -------------------------------------------- */
 #include <string>
 
@@ -56,3 +59,5 @@ class HttpRequest {
         std::string mAccpetEncoding;
     private:
 };
+
+#endif /* HTTP_REQUEST_HPP */
