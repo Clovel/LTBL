@@ -131,7 +131,10 @@ int HttpRequest::parseRequest(const std::string &pRequestStr) {
     /* Set full request in class */
     mRequestStr = pRequestStr;
 
-    lLines = split(pRequestStr, '\n');
+    /* Clean the request string */
+    removeCR(mRequestStr);
+
+    lLines = split(mRequestStr, '\n');
 
     if(lLines.empty()) {
         /* Got nothing, returning error */
@@ -158,7 +161,45 @@ int HttpRequest::parseRequest(const std::string &pRequestStr) {
         } else {
             mShortURL = mURL;
         }
+    }
 
+    /* Starting for loop at 1, we already parsed the first line */
+    for(unsigned short int i = 1U; i < lLines.size(); ++i) {
+        //*gLogger << "[DEBUG] <parseRequest> lLines[" << i << "] = \"" << lLines[i] << "\"" << endlog;
+
+        if(lLines[i].empty()) {
+            continue;
+        }
+
+        std::string lKey = getStrBeforeDelim(lLines[i], ' ');
+        std::string lVal = getStrAfterDelim(lLines[i], ' ');
+
+        /* Remove trailing ":" of the key if there is one */
+        removeTrailingChar(lKey, ':');
+        /* Remove first space of the value if there is one */
+        removeFirstChar(lVal, ' ');
+
+        //*gLogger << "[DEBUG] <parseRequest> lKey = " << lKey << ", lVal = " << lVal << endlog;
+
+        /* Set the HttpRequest attributes */
+        if("Host" == lKey) {
+            mHost = lVal;
+        } else if("Upgrade-Insecure-Requests" == lKey) {
+            mUpgradeInsecureRequests = std::atoi(lVal.c_str());
+        } else if("Accept" == lKey) {
+            mAccept = lVal;
+        } else if("User-Agent" == lKey) {
+            mUserAgent = lVal;
+        } else if("Accept-Language" == lKey) {
+            mAccpetLanguage = lVal;
+        } else if("Accept-Encoding" == lKey) {
+            mAccpetEncoding = lVal;
+        } else if("Connection" == lKey) {
+            mConnectionType = lVal;
+        } else {
+            *gLogger << "[WARN ] Unknown key parsed in the HTTP request (key: " << lKey << ", val: " << lVal << ")" << endlog;
+            /* TODO : Should we return an error here ? */
+        }
     }
 
     return 0;
@@ -191,11 +232,18 @@ std::string HttpRequest::httpVersion(void) const {
 
 /* Printer */
 void HttpRequest::print(void) {
-    *gLogger << "[DEBUG] <HttpRequest::parseRequest> Line 1 : " << endlog
-            << "Method       : " << mMethod << endlog
-            << "URL          : " << mURL << endlog
-            << "Short URL    : " << mShortURL << endlog
-            << "Query        : " << mQuery << endlog
-            << "HTTP Version : " << mHttpVersion << endlog
+    *gLogger << "[DEBUG] <HttpRequest::parseRequest> PRINT" << endlog
+            << "Method          : " << mMethod << endlog
+            << "URL             : " << mURL << endlog
+            << "Short URL       : " << mShortURL << endlog
+            << "Query           : " << mQuery << endlog
+            << "HTTP Version    : " << mHttpVersion << endlog
+            << "Host            : " << mHost << endlog
+            << "Connection Type : " << mConnectionType << endlog
+            << "U-I-Requests    : " << mUpgradeInsecureRequests << endlog
+            << "Accept          : " << mAccept << endlog
+            << "User Agent      : " << mUserAgent << endlog
+            << "Accept Language : " << mAccpetLanguage << endlog
+            << "Accpet Encoding : " << mAccpetEncoding << endlog
             << endlog;
 }
