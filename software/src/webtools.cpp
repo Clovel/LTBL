@@ -340,7 +340,7 @@ void togglePage2(WiFiClient * const pClient)
             GPIO 5 - State )=====" + gRelay->stringState() +
             R"=====(</p>
         <p>
-            <a href="/5/)=====" + (gRelay->isOn() ? "off" : "on") + R"=====(">
+            <a href="/)=====" + (gRelay->isOn() ? "off" : "on") + R"=====(">
                 <button class="button)=====" + (gRelay->isOn() ? R"=====( button2">)=====" : R"=====(">)=====") +
                     (gRelay->isOn() ? "OFF" : "ON") +
                 R"=====(</button>
@@ -569,13 +569,13 @@ int testAccept(WiFiClient * const pClient,
                     (void)htmlSend(pClient, htmlHead);
 
                     /* Turn the relay ON or OFF */
-                    if (pHeader->find("GET /5/on") != std::string::npos) {
+                    if (pHeader->find("GET /on") != std::string::npos) {
                         *gLogger << "Relay ON" << endlog;
                         gRelay->turnOn();
-                    } else if (pHeader->find("GET /5/off") != std::string::npos) {
+                    } else if (pHeader->find("GET /off") != std::string::npos) {
                         *gLogger << "Relay OFF" << endlog;
                         gRelay->turnOff();
-                    } else if (String(pHeader->c_str()).indexOf("GET /5") >= 0) {
+                    } else if (String(pHeader->c_str()).indexOf("GET /") >= 0) {
                         *gLogger << "Get Relay state" << endlog;
                     }
 
