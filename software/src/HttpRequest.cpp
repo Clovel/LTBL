@@ -31,13 +31,13 @@ static void split(const std::string &pStr, const char pDelim, std::vector<std::s
 
         /* Find the position of the next '\n' */
         lPos = pStr.find(pDelim, lPos);
-        
-        if(std::string::npos != lPos) {
-            ++lPos;
-        }
 
         /* Extract the substring (lSub) */
         lSub = pStr.substr(lOldPos, lPos - lOldPos);
+
+        if(std::string::npos != lPos) {
+            ++lPos;
+        }
 
         if(lSub.empty()) {
             break;
@@ -53,6 +53,62 @@ static std::vector<std::string> split(const std::string &pStr, char pDelim) {
     split(pStr, pDelim, lWords);
 
     return lWords;
+}
+
+static std::string getStrAfterDelim(const std::string &pStr, char pDelim) {
+    size_t lDelimPos = pStr.find(pDelim);
+    size_t lEOLPos   = pStr.find('\n');
+
+    if(std::string::npos != lEOLPos) {
+        ++lEOLPos;
+    }
+
+    std::string lSub = pStr.substr(lDelimPos, lEOLPos - lDelimPos);
+
+    return lSub;
+}
+
+static std::string getStrBeforeDelim(const std::string &pStr, char pDelim) {
+    return pStr.substr(0U, pStr.find(pDelim));
+}
+
+static void removeChar(std::string &pStr, const char pChar) {
+    size_t lPos = 0U;
+
+    while(std::string::npos != lPos) {
+        if(std::string::npos == (lPos = pStr.find(pChar))) {
+            break;
+        }
+        pStr = pStr.substr(0U, lPos) + pStr.substr(lPos + 1U);
+    }
+}
+
+static void removeFirstChar(std::string &pStr, const char pChar) {
+    if(0U == pStr.find(pChar)) {
+        pStr = pStr.substr(1U);
+    }
+}
+
+static void removeTrailingChar(std::string &pStr, const char pChar) {
+    if(pChar == pStr[pStr.size() - 1]) {
+        pStr = pStr.substr(0U, pStr.size() - 1);
+    }
+}
+
+static void removeChar(std::vector<std::string> &pStrs, const char pChar) {
+    for(size_t i = 0U; i < pStrs.size(); ++i) {
+        removeChar(pStrs[i], pChar);
+    }
+}
+
+static void removeCR(std::string &pStr) {
+    removeChar(pStr, '\r');
+}
+
+static void removeCR(std::vector<std::string> &pStrs) {
+    for(size_t i = 0U; i < pStrs.size(); ++i) {
+        removeCR(pStrs[i]);
+    }
 }
 
 /* Class implementation -------------------------------- */
