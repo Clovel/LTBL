@@ -603,5 +603,9 @@ int testAccept(WiFiClient * const pClient,
         }
     }
 
+    /* Close the client when operation is done */
+    pClient->stop();
+    *gLogger << "[INFO ] <testAccept> Client disconnected." << endlog;
+
     return 0;
 }
