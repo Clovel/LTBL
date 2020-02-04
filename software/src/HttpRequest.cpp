@@ -151,3 +151,14 @@ std::string HttpRequest::query(void) const {
 std::string HttpRequest::httpVersion(void) const {
     return mHttpVersion;
 }
+
+/* Printer */
+void HttpRequest::print(void) {
+    *gLogger << "[DEBUG] <HttpRequest::parseRequest> Line 1 : " << endlog
+            << "Method       : " << mMethod << endlog
+            << "URL          : " << mURL << endlog
+            << "Short URL    : " << mShortURL << endlog
+            << "Query        : " << mQuery << endlog
+            << "HTTP Version : " << mHttpVersion << endlog
+            << endlog;
+}

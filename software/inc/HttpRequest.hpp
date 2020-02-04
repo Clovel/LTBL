@@ -35,6 +35,9 @@ class HttpRequest {
         std::string query(void) const;
         std::string httpVersion(void) const;
 
+        /* Printer */
+        void print(void);
+
     protected:
         std::string mRequestStr;
         
