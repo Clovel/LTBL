@@ -76,6 +76,7 @@ class HttpRequest {
         std::string mUserAgent;
         std::string mAccpetLanguage;
         std::string mAccpetEncoding;
+        std::string mReferer;
     private:
 };
 

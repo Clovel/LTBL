@@ -217,6 +217,8 @@ httpRequestParseError_t HttpRequest::parseRequest(const std::string &pRequestStr
             mAccpetEncoding = lVal;
         } else if("Connection" == lKey) {
             mConnectionType = lVal;
+        } else if("Referer" == lKey) {
+            mReferer = lVal;
         } else {
             *gLogger << "[WARN ] Unknown key parsed in the HTTP request (key: " << lKey << ", val: " << lVal << ")" << endlog;
             /* TODO : Should we return an error here ? */
