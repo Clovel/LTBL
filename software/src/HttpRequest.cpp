@@ -153,7 +153,6 @@ httpRequestParseError_t HttpRequest::parseRequest(const std::string &pRequestStr
 
         mMethodStr = lWords[0U];
         /* What method is it ? */
-        restMethod_t lREST = REST_UNKNOWN;
         if(0 == strcasecmp("GET", mMethodStr.c_str())) {
             mMethod = REST_GET;
         } else if (0 == strcasecmp("POST", mMethodStr.c_str())) {

@@ -525,13 +525,13 @@ int sendTogglePage(WiFiClient &pClient, const HttpRequest &pRequest) {
     (void)htmlSend(&pClient, htmlHead);
 
     /* Turn the relay ON or OFF */
-    if (pRequest.URL.find("/on") != std::string::npos) {
+    if (pRequest.URL().find("/on") != std::string::npos) {
         *gLogger << "Relay ON" << endlog;
         gRelay->turnOn();
-    } else if (pRequest.URL.find("/off") != std::string::npos) {
+    } else if (pRequest.URL().find("/off") != std::string::npos) {
         *gLogger << "Relay OFF" << endlog;
         gRelay->turnOff();
-    } else if (String(pRequest.URL.c_str()).indexOf("/") >= 0) {
+    } else if (String(pRequest.URL().c_str()).indexOf("/") >= 0) {
         *gLogger << "Get Relay state" << endlog;
     }
 
