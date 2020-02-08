@@ -9,6 +9,7 @@ This project aims to create a web-connected lamp controled by both a physical sw
 - https://forum.arduino.cc/index.php?topic=590593.0
 - https://developer.myconstellation.io/tutorials/creer-une-prise-connectee-avec-un-esp8266/
 - https://randomnerdtutorials.com/wifimanager-with-esp8266-autoconnect-custom-parameter-and-manage-your-ssid-and-password/
+https://www.google.fr/amp/s/lastminuteengineers.com/esp8266-ota-updates-arduino-ide/amp/
 
 # Logger class
 The logger class is inspired from https://abrushforeachkeyboard.wordpress.com/2014/06/17/arduino-adding-a-logger-class-with-a-c-style-print-of-messages/
