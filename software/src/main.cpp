@@ -103,22 +103,11 @@ void loop(void) {
         std::string lCurrentLine = "";
         int lResult = 0;
 
-        // /* Loop while the client is connected */
-        // while(lClient.connected()) {
-        //     /* Process request */
-        //     lResult = acceptRequest(&lClient);
-        //     if(0 != lResult) {
-        //         Serial.println("[ERROR] Failed to process remote request w/ acceptRequest !");
-        //     } else {
-        //         Serial.println("[DEBUG] Processed acceptRequest successfully !");
-        //     }
-        // }
-
-        lResult = testAccept(&lClient, &lCurrentLine, &sRequest);
+        lResult = acceptRequest(&lClient, &lCurrentLine, &sRequest);
         if(0 != lResult) {
-            *gLogger << "[ERROR] Failed to process remote request w/ testAccept !" << endlog;
+            *gLogger << "[ERROR] Failed to process remote request w/ acceptRequest !" << endlog;
         } else {
-            *gLogger << "[DEBUG] Processed testAccept successfully !" << endlog;
+            *gLogger << "[DEBUG] Processed acceptRequest successfully !" << endlog;
         }
 
         /* Clear the request string */

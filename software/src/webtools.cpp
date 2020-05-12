@@ -359,160 +359,6 @@ void togglePage2(WiFiClient * const pClient)
     }
 }
 
-/**********************************************************************/
-/* A request has caused a call to accept() on the server port to
- * return. Process the request appropriately.
- * Parameters: the socket connected to the client */
-/**********************************************************************/
-int acceptRequest(WiFiClient * const pClient) {
-    if(nullptr == pClient) {
-        *gLogger << "[ERROR] Client is a nullptr !" << endlog;
-        return -1;
-    }
-
-    int lNumChars = 0;
-
-    HttpRequest lRequest;
-
-    char lBuf[1024U];
-    memset(lBuf, 0, 1024U);
-
-    std::string lRequestStr;
-    do {
-        lNumChars = 0;
-        /* Reset the buffer to receive the line */
-        memset(lBuf, 0, 1024U);
-
-        /* Get the line */
-        lNumChars = getLine(pClient, lBuf, sizeof(lBuf));
-        //std::cout << "[DEBUG] <acceptRequest> Got \"" << std::string(lBuf) << "\" from the client. " << std::endl;
-
-        if(0 > lNumChars) {
-            *gLogger << "[ERROR] <acceptRequest> getLine failed, returned " << lNumChars << endlog;
-            pClient->stop();
-            return -1;
-        } else if(0 == lNumChars) {
-            *gLogger << "[WARN ] <acceptRequest> Read 0 characters !" << endlog;
-        } else if(std::string(lBuf).empty()) {
-            *gLogger << "[WARN ] <acceptRequest> Got an empty line !" << endlog;
-            if(lNumChars) {
-                *gLogger << "[ERROR] <acceptRequest> Got an empty line, but lNumChars = " << lNumChars << endlog;
-                pClient->stop();
-                return -1;
-            }
-        }
-
-        /* Append the line to the request */
-        lRequestStr += std::string(lBuf);
-    } while(0 < lNumChars);
-    
-    /* Print out what we received */
-    *gLogger << "[DEBUG] <acceptRequest> lRequestStr = \"" << lRequestStr.c_str() << "\"" << endlog;
-    if(lRequestStr.empty()) {
-        *gLogger << "[WARN ] Got an empty request, exiting..." << endlog;
-        pClient->stop();
-        return -1;
-    }
-    lRequest.parseRequest(lRequestStr);
-
-    /* Get the method from the client's request */
-    std::string lMethod = lRequest.methodStr();
-    *gLogger << "[DEBUG] <acceptRequest> The method is " << lMethod.c_str() << endlog;
-
-    /* Get the URL of the request from the client's request */
-    *gLogger << "[DEBUG] <acceptRequest> The requested URL is : " << lRequest.URL().c_str() << endlog;
-    *gLogger << "[DEBUG] <acceptRequest> The short URL is     : " << lRequest.shortURL().c_str() << endlog;
-    std::string lURL = lRequest.shortURL();
-
-    /* The real query is located after the "?" symbol */
-    std::string lQuery = lRequest.query();
-    if(lQuery.empty()) {
-        *gLogger << "[DEBUG] <acceptRequest> No query found." << endlog;
-    } else {
-        *gLogger << "[DEBUG] <acceptRequest> The query is " << lQuery.c_str() << endlog;
-    }
-
-    /* What method is it ? */
-    restMethod_t lREST = REST_UNKNOWN;
-    if(0 == strcasecmp("GET", lMethod.c_str())) {
-        lREST = REST_GET;
-    } else if (0 == strcasecmp("POST", lMethod.c_str())) {
-        lREST = REST_POST;
-    } else if (0 == strcasecmp("PUT", lMethod.c_str())) {
-        lREST = REST_PUT;
-    } else if (0 == strcasecmp("HEAD", lMethod.c_str())) {
-        lREST = REST_HEAD;
-    } else if (0 == strcasecmp("DELETE", lMethod.c_str())) {
-        lREST = REST_DELETE;
-    } else if (0 == strcasecmp("PATCH", lMethod.c_str())) {
-        lREST = REST_PATCH;
-    } else if (0 == strcasecmp("OPTIONS", lMethod.c_str())) {
-        lREST = REST_OPTIONS;
-    } else {
-        unimplemented(pClient);
-        *gLogger << "[ERROR] <acceptRequest> Unknown REST method requested ! " << endlog;
-        pClient->stop();
-        return -1;
-    }
-
-    switch(lREST) {
-        case REST_GET:
-            *gLogger << "[DEBUG] <acceptRequest> Request is GET" << endlog;
-
-            /* What is the URL ? */
-            if("/" == lURL || "/index.html" == lURL) {
-                /* Home page */
-            } else if ("/toggle" == lURL) {
-                /* Switch the relays state */
-                gRelay->switchState();
-
-                /* Check the relay's state, print it out */
-                if(gRelay->isOn()) {
-                    *gLogger << "[DEBUG] <acceptRequest> Toggled relay, is now ON" << endlog;
-                } else {
-                    *gLogger << "[DEBUG] <acceptRequest> Toggled relay, is now OFF" << endlog;
-                }
-            } else {
-                /* Unimplemented */
-                notFound(pClient);
-                *gLogger << "[ERROR] Unknown URL requested !" << endlog;
-                pClient->stop();
-                return -1;
-            }
-
-            /* Send back the toggle page */
-            togglePage(pClient);
-            break;
-        case REST_POST:
-            *gLogger << "[DEBUG] <acceptRequest> Request is POST" << endlog;
-            unimplemented(pClient);
-            pClient->stop();
-            return -1;
-            break;
-        case REST_INDEX:
-            *gLogger << "[DEBUG] <acceptRequest> Request is INDEX" << endlog;
-            home(pClient);
-            break;
-        case REST_PUT:
-            *gLogger << "[DEBUG] <acceptRequest> Request is PUT" << endlog;
-            unimplemented(pClient);
-            pClient->stop();
-            return -1;
-        case REST_UNKNOWN:
-        default:
-            *gLogger << "[ERROR] <acceptRequest> Request is unknown" << endlog;
-            unimplemented(pClient);
-            pClient->stop();
-            return -1;
-    }
-
-    /* Close the client */
-    delay(10U);
-    pClient->stop();
-
-    return 0;
-}
-
 int sendTogglePage(WiFiClient &pClient, const HttpRequest &pRequest) {
     /** HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
      * and a content-type so the client knows what's coming, then a blank line
@@ -545,10 +391,12 @@ int sendTogglePage(WiFiClient &pClient, const HttpRequest &pRequest) {
 }
 
 /**********************************************************************/
-/* A test function given as an example by 
- * https://randomnerdtutorials.com/wifimanager-with-esp8266-autoconnect-custom-parameter-and-manage-your-ssid-and-password/ */
+/* Accept client request */
+/* */
+/* A test function given as an example by */
+/* https://randomnerdtutorials.com/wifimanager-with-esp8266-autoconnect-custom-parameter-and-manage-your-ssid-and-password/ */
 /**********************************************************************/
-int testAccept(WiFiClient * const pClient, 
+int acceptRequest(WiFiClient * const pClient, 
     std::string * const pCurrentLine, 
     std::string * const pHeader)
 {
